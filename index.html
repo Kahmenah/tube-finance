@@ -1600,16 +1600,24 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 
 async function init(){
   showLoading();
+  const bail = setTimeout(() => { hideLoading(); render('dashboard'); }, 12000);
   try {
-    const [pRows, fcRows, setRows, recRow, tRows, spRows, bdRows] = await Promise.all([
-      sb.from('partners').select('*').order('split_pct',{ascending:false}).then(r=>r.data),
-      sb.from('forecast_inputs').select('*').order('sort_order').then(r=>r.data),
-      sb.from('settings').select('*').then(r=>r.data),
-      sb.from('recoupment').select('*').limit(1).maybeSingle().then(r=>r.data),
-      sb.from('transactions').select('*, partners(name)').order('date',{ascending:false}).then(r=>r.data),
-      sb.from('sponsors').select('*').order('created_at').then(r=>r.data),
-      sb.from('brand_deals').select('*').order('created_at').then(r=>r.data),
+    const results = await Promise.allSettled([
+      sb.from('partners').select('*').order('split_pct',{ascending:false}),
+      sb.from('forecast_inputs').select('*').order('sort_order'),
+      sb.from('settings').select('*'),
+      sb.from('recoupment').select('*').limit(1).maybeSingle(),
+      sb.from('transactions').select('*, partners(name)').order('date',{ascending:false}),
+      sb.from('sponsors').select('*').order('created_at'),
+      sb.from('brand_deals').select('*').order('created_at'),
     ]);
+    const pRows  = results[0].value?.data;
+    const fcRows = results[1].value?.data;
+    const setRows= results[2].value?.data;
+    const recRow = results[3].value?.data;
+    const tRows  = results[4].value?.data;
+    const spRows = results[5].value?.data;
+    const bdRows = results[6].value?.data;
     if(pRows?.length){
       partners.length=0;
       pRows.forEach(p=>partners.push({name:p.name,init:p.initials,color:p.color,pct:Number(p.split_pct)}));
@@ -1635,6 +1643,7 @@ async function init(){
     if(bdRows){ brandDeals.length=0; archivedDeals.length=0; bdRows.forEach(d=>{ const deal={id:d.id,partner:d.partner,deal:d.deal,month:d.month,val:Number(d.value),status:d.status}; if(d.archived) archivedDeals.push(deal); else brandDeals.push(deal); }); }
     F=compute();
   } catch(e){ console.error('Supabase load error:',e); }
+  clearTimeout(bail);
   hideLoading();
   render('dashboard');
 }
