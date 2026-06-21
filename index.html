@@ -223,7 +223,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div id="loading" style="position:fixed;inset:0;background:#141517;display:flex;align-items:center;justify-content:center;z-index:999;font-size:13px;color:#8b8e91">Loading…</div>
+<div id="loading" style="position:fixed;inset:0;background:#141517;display:none;align-items:center;justify-content:center;z-index:999;font-size:13px;color:#8b8e91">Loading…</div>
 <div id="login-screen" style="display:none;position:fixed;inset:0;background:#141517;align-items:center;justify-content:center;z-index:1000">
   <div style="width:360px;background:#1a1c1e;border:1px solid #2a2d30;border-radius:12px;padding:40px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
@@ -1664,6 +1664,7 @@ async function init(){
 let currentUser = null;
 
 function showLoginScreen(){
+  hideLoading();
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-msg').textContent = '';
   document.getElementById('login-email').value = '';
@@ -1764,7 +1765,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('reset-msg').textContent = '';
     document.getElementById('reset-pass').value = '';
   } else if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
-    if(currentUser){ hideLoginScreen(); await init(); }
+    if(currentUser){ hideLoginScreen(); showLoading(); await init(); }
     else showLoginScreen();
   } else if(event === 'SIGNED_OUT'){
     showLoginScreen();
