@@ -1600,14 +1600,20 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 
 async function init(){
   showLoading();
+  const loadingEl = document.getElementById('loading');
+  const setMsg = m => { if(loadingEl) loadingEl.textContent = m; };
+  // Force-render after 12s if Supabase never responds
+  const bailTimer = setTimeout(() => { hideLoading(); render('dashboard'); }, 12000);
   try {
     // Partners
+    setMsg('Loading partners…');
     const {data:pRows} = await sb.from('partners').select('*').order('split_pct',{ascending:false});
     if(pRows?.length){
       partners.length=0;
       pRows.forEach(p=>partners.push({name:p.name,init:p.initials,color:p.color,pct:Number(p.split_pct)}));
     }
     // Forecast inputs
+    setMsg('Loading forecast…');
     const {data:fcRows} = await sb.from('forecast_inputs').select('*').order('sort_order');
     if(fcRows?.length){
       cashIn.length=0; cashOut.length=0; financing.length=0;
@@ -1619,12 +1625,14 @@ async function init(){
       });
     }
     // Settings
+    setMsg('Loading settings…');
     const {data:setRows} = await sb.from('settings').select('*');
     setRows?.forEach(s=>{ if(s.key==='opening_balance') openingBalance=parseFloat(s.value)||0; });
     // Recoupment
     const {data:recRow} = await sb.from('recoupment').select('*').limit(1).maybeSingle();
     if(recRow) recoupCollected=Number(recRow.collected);
     // Transactions
+    setMsg('Loading transactions…');
     const {data:tRows} = await sb.from('transactions').select('*, partners(name)').order('date',{ascending:false});
     if(tRows){
       txns.length=0;
@@ -1638,6 +1646,7 @@ async function init(){
       }));
     }
     // Sponsors
+    setMsg('Loading sponsors…');
     const {data:spRows} = await sb.from('sponsors').select('*').order('created_at');
     if(spRows){
       sponsors.length=0; archivedSponsors.length=0;
@@ -1647,6 +1656,7 @@ async function init(){
       });
     }
     // Brand deals
+    setMsg('Loading deals…');
     const {data:bdRows} = await sb.from('brand_deals').select('*').order('created_at');
     if(bdRows){
       brandDeals.length=0; archivedDeals.length=0;
@@ -1656,7 +1666,8 @@ async function init(){
       });
     }
     F=compute();
-  } catch(e){ console.error('Supabase load error:',e); }
+  } catch(e){ console.error('Supabase load error:',e); setMsg('Error: '+e.message); }
+  clearTimeout(bailTimer);
   hideLoading();
   render('dashboard');
 }
