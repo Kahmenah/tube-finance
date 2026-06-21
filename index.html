@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tube Finance</title>
+<style>
+  :root {
+    --bg: #141517;
+    --panel: #1a1c1e;
+    --panel-2: #1e2022;
+    --hover: #25282b;
+    --border: #2a2d30;
+    --text: #e8e8e6;
+    --muted: #8b8e91;
+    --muted-2: #5f6266;
+    --label: #6c6f72;
+    --accent: #ff4d4d;
+    --pos: #3ecf8e;
+    --neg: #ff6b6b;
+    --blue: #5b9dff;
+    --amber: #f5b84e;
+    --teal: #4fd1c5;
+    --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+  }
+
+  /* ---------- Sidebar ---------- */
+  aside {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    overflow-y: auto;
+    padding: 18px 12px;
+    position: sticky;
+    top: 0;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 16px; font-weight: 600; color: var(--text);
+    padding: 4px 8px 16px;
+  }
+  .brand .play {
+    color: var(--accent); font-size: 15px;
+  }
+  .nav-sep { height: 1px; background: var(--border); margin: 4px 8px 12px; }
+  .nav-group-label {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--label); padding: 14px 10px 6px; font-weight: 600;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 10px; border-radius: 7px;
+    color: var(--muted); cursor: pointer; font-size: 13.5px;
+    user-select: none;
+  }
+  .nav-item .ico { width: 15px; text-align: center; opacity: .8; font-size: 13px; }
+  .nav-item:hover { background: var(--hover); color: var(--text); }
+  .nav-item.active { background: var(--panel-2); color: var(--text); }
+  .nav-item.active .ico { opacity: 1; }
+  .conn-dot { width: 6px; height: 6px; border-radius: 50%; margin-left: auto; }
+  .conn-ok { background: var(--pos); }
+  .conn-warn { background: var(--amber); }
+
+  /* ---------- Main ---------- */
+  main { flex: 1; height: 100vh; overflow-y: auto; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 28px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 5;
+  }
+  .topbar h1 { font-size: 19px; font-weight: 600; }
+  .topbar .sub { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .top-right { display: flex; align-items: center; gap: 14px; }
+  .sync { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .toggle { display: flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .toggle button {
+    background: transparent; border: none; color: var(--muted);
+    padding: 6px 12px; font-size: 12.5px; cursor: pointer;
+  }
+  .toggle button.on { background: var(--hover); color: var(--text); }
+
+  .content { padding: 22px 28px 60px; }
+
+  /* KPI cards */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi {
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  .kpi .label { color: var(--muted); font-size: 12px; }
+  .kpi .val { font-size: 25px; font-weight: 600; margin-top: 8px; letter-spacing: -.01em; }
+  .kpi .delta { font-size: 12px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .up { color: var(--pos); } .down { color: var(--neg); }
+
+  .row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-top: 18px; }
+  .card {
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .card h3 { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .card .h-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+
+  .legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+  /* assumptions list */
+  .assump-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .assump-item:last-child { border-bottom: none; }
+  .assump-item .k { color: var(--muted); }
+  .assump-item .v { color: var(--text); font-weight: 500; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13px; }
+  thead th { text-align: right; color: var(--label); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  thead th:first-child { text-align: left; }
+  tbody td { text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tbody td:first-child { text-align: left; color: var(--muted); }
+  tbody tr.total td { font-weight: 600; color: var(--text); border-top: 1px solid var(--border); }
+  tbody tr.section td:first-child { color: var(--label); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding-top: 16px; }
+
+  .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--muted-2); gap: 10px; }
+  .placeholder .big { font-size: 34px; }
+  .placeholder .t { font-size: 15px; color: var(--muted); }
+  .pill { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; }
+
+  /* badges */
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
+  .b-pos { background: rgba(62,207,142,.13); color: var(--pos); }
+  .b-warn { background: rgba(245,184,78,.14); color: var(--amber); }
+  .b-neg { background: rgba(255,107,107,.13); color: var(--neg); }
+  .b-info { background: rgba(91,157,255,.14); color: var(--blue); }
+  .b-muted { background: var(--hover); color: var(--muted); }
+
+  /* progress bar */
+  .bar { height: 7px; background: var(--hover); border-radius: 6px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 6px; }
+
+  /* layout helpers */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .mt { margin-top: 16px; }
+  .row-between { display: flex; justify-content: space-between; align-items: center; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* avatar */
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+
+  /* list rows */
+  .lrow { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .lrow:last-child { border-bottom: none; }
+  .lrow .grow { flex: 1; }
+  .lrow .sub2 { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+
+  /* mini bar chart */
+  .mbars { display: flex; align-items: flex-end; gap: 6px; height: 180px; }
+  .mbars .mb { flex: 1; background: var(--blue); border-radius: 3px 3px 0 0; min-height: 3px; opacity: .85; }
+
+  /* editable inputs */
+  .afield { display: flex; flex-direction: column; gap: 7px; }
+  .afield label { font-size: 11.5px; color: var(--muted); }
+  .in-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; }
+  .in-wrap:focus-within { border-color: var(--blue); }
+  .in-pre, .in-suf { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .in { flex: 1; min-width: 0; background: transparent; border: none; color: var(--text); padding: 8px 0; font-size: 13.5px; text-align: right; font-variant-numeric: tabular-nums; }
+  .in:focus { outline: none; }
+  .in::-webkit-outer-spin-button, .in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .in { -moz-appearance: textfield; }
+
+  /* editable forecast grid */
+  .grid-fc { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 1040px; }
+  .grid-fc th { color: var(--label); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
+  .grid-fc th.rl { text-align: left; }
+  .grid-fc td { border-bottom: 1px solid var(--border); padding: 0; }
+  .grid-fc td.rl { color: var(--muted); padding: 7px 14px 7px 0; white-space: nowrap; }
+  .grid-fc tr.sec td { color: var(--label); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 14px 0 4px; border-bottom: none; }
+  .grid-fc .cell { width: 100%; min-width: 64px; background: transparent; border: none; color: var(--text); text-align: right; padding: 7px 8px; font-size: 12.5px; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+  .grid-fc .cell:hover { background: var(--hover); }
+  .grid-fc .cell:focus { outline: none; background: rgba(91,157,255,.16); }
+  .grid-fc .cell::-webkit-outer-spin-button, .grid-fc .cell::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .grid-fc .cnum { padding: 7px 8px; text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+  .grid-fc tr.tot td { background: rgba(62,207,142,.07); font-weight: 600; }
+  .grid-fc tr.tot td.rl, .grid-fc tr.sub td.rl { color: var(--text); }
+  .grid-fc tr.sub td { background: var(--panel); }
+
+  /* editable / add / remove rows */
+  .rl-cell { display: flex; align-items: center; gap: 4px; }
+  .row-del { background: none; border: none; color: var(--muted-2); cursor: pointer; font-size: 15px; line-height: 1; padding: 1px 5px; border-radius: 4px; opacity: 0; transition: opacity .1s; }
+  .grid-fc tbody tr:hover .row-del { opacity: 1; }
+  .row-del:hover { color: var(--neg); background: var(--hover); }
+  .rl-in { background: transparent; border: none; color: var(--muted); font-size: 12.5px; padding: 6px 4px; width: 168px; border-radius: 5px; }
+  .rl-in:hover { background: var(--hover); }
+  .rl-in:focus { outline: none; background: var(--hover); color: var(--text); }
+  .row-add { background: none; border: 1px dashed var(--border); color: var(--muted); cursor: pointer; font-size: 11.5px; padding: 5px 11px; border-radius: 6px; }
+  .row-add:hover { color: var(--text); border-color: var(--muted-2); }
+  .grid-fc tr.addrow td { border-bottom: none; padding: 6px 0 2px; }
+
+  /* drag-to-fill */
+  td.cellwrap { position: relative; }
+  .fill-handle { position: absolute; right: 2px; bottom: 3px; width: 7px; height: 7px; background: #3ecf8e; border: 1px solid var(--panel-2); border-radius: 1px; cursor: crosshair; opacity: 0; z-index: 2; }
+  td.cellwrap:hover .fill-handle, .grid-fc .cell:focus ~ .fill-handle { opacity: 1; }
+  .grid-fc .cell.fill-preview { background: rgba(62,207,142,.18); }
+
+  /* editable dropdowns (transactions) */
+  .sel { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+  .sel:hover { border-color: var(--muted-2); }
+  .sel:focus { outline: none; border-color: var(--blue); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="loading" style="position:fixed;inset:0;background:#141517;display:flex;align-items:center;justify-content:center;z-index:999;font-size:13px;color:#8b8e91">Loading…</div>
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:#141517;align-items:center;justify-content:center;z-index:1000">
+  <div style="width:360px;background:#1a1c1e;border:1px solid #2a2d30;border-radius:12px;padding:40px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+      <span style="font-size:22px;color:#ff4d4d">▶</span>
+      <span style="font-size:18px;font-weight:600;color:#e8e8e6">Tube Finance</span>
+    </div>
+    <div style="font-size:13px;color:#8b8e91;margin-bottom:24px">Sign in to continue</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6c6f72;margin-bottom:6px">Email</div>
+      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
+    </div>
+    <div style="margin-bottom:22px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6c6f72;margin-bottom:6px">Password</div>
+      <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
+    </div>
+    <button id="login-btn" style="width:100%;background:#3ecf8e;color:#0d1117;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
+    <div id="login-msg" style="font-size:12px;text-align:center;min-height:20px;margin-top:12px"></div>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:#6c6f72">First time? <a id="toggle-signup" href="#" style="color:#5b9dff;text-decoration:none">Create account</a></div>
+  </div>
+</div>
+
+<aside>
+  <div class="brand"><span class="play">▶</span> Tube Finance</div>
+  <div class="nav-sep"></div>
+
+  <div class="nav-group-label">Overview</div>
+  <div class="nav-item active" data-view="dashboard"><span class="ico">◧</span> Dashboard</div>
+  <div class="nav-item" data-view="forecast"><span class="ico">◴</span> Cash forecast</div>
+
+  <div class="nav-group-label">Money</div>
+  <div class="nav-item" data-view="transactions"><span class="ico">⇄</span> Transactions</div>
+  <div class="nav-item" data-view="pl"><span class="ico">▤</span> P&amp;L</div>
+  <div class="nav-item" data-view="balance"><span class="ico">▦</span> Balance sheet</div>
+  <div class="nav-item" data-view="tax"><span class="ico">%</span> Tax estimate</div>
+
+  <div class="nav-group-label">Business</div>
+  <div class="nav-item" data-view="sponsors"><span class="ico">◈</span> Sponsors</div>
+  <div class="nav-item" data-view="channel"><span class="ico">▶</span> Channel metrics</div>
+  <div class="nav-item" data-view="splits"><span class="ico">◑</span> Partner splits</div>
+
+  <div class="nav-group-label">Personal Accounts</div>
+  <div class="nav-item" data-view="deals"><span class="ico">✦</span> Brand Deals</div>
+
+  <div class="nav-group-label">Settings</div>
+  <div class="nav-item" data-view="admin"><span class="ico">⚙</span> Admin</div>
+
+  <div class="nav-group-label">Connectors</div>
+  <div class="nav-item" data-view="era"><span class="ico">◍</span> Era · bank sync <span class="conn-dot conn-ok"></span></div>
+  <div class="nav-item" data-view="yt"><span class="ico">▶</span> YouTube Data API <span class="conn-dot conn-ok"></span></div>
+  <div class="nav-item" data-view="drive"><span class="ico">△</span> Google Drive <span class="conn-dot conn-warn"></span></div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div>
+      <h1 id="view-title">Cash forecast</h1>
+      <div class="sub" id="view-sub">Jul 2026 – Jun 2027 · 12-month projection</div>
+    </div>
+    <div class="top-right">
+      <div class="sync"><span class="conn-dot conn-ok" style="position:static"></span> Synced via Era · 2h ago</div>
+    </div>
+  </div>
+
+  <div class="content" id="content"><!-- view injected by JS --></div>
+</main>
+
+<script>
+// ── Supabase ─────────────────────────────────────────────────
+const _SB_URL  = 'https://thbmigoqjapzszmqzvlq.supabase.co';
+const _SB_ANON = 'sb_publishable_LhapnBGDdIfwY1TCiG9Bcw__v5FigrP';
+const sb = window.supabase.createClient(_SB_URL, _SB_ANON);
+const showLoading = () => { document.getElementById('loading').style.display='flex'; };
+const hideLoading = () => { document.getElementById('loading').style.display='none'; };
+
+const db = {
+  async upsertForecastRow(row, sec, idx){
+    const section = sec==='fin' ? 'financing' : sec;
+    const payload = {section, sort_order:idx, label:row.label, vals:row.vals};
+    if(row.id){ await sb.from('forecast_inputs').update(payload).eq('id',row.id); }
+    else{ const {data}=await sb.from('forecast_inputs').insert(payload).select().single(); if(data) row.id=data.id; }
+  },
+  async deleteForecastRow(row){ if(row.id) await sb.from('forecast_inputs').delete().eq('id',row.id); },
+  async saveOpeningBalance(v){ await sb.from('settings').upsert({key:'opening_balance',value:String(v)}); },
+  async upsertSponsor(sp){
+    const p={name:sp.name,type:sp.type,month:sp.month,value:sp.val,status:sp.status,archived:!!sp.archived};
+    if(sp.id){ await sb.from('sponsors').update(p).eq('id',sp.id); }
+    else{ const {data}=await sb.from('sponsors').insert(p).select().single(); if(data) sp.id=data.id; }
+  },
+  async deleteSponsor(sp){ if(sp.id) await sb.from('sponsors').delete().eq('id',sp.id); },
+  async upsertDeal(d){
+    const p={partner:d.partner,deal:d.deal,month:d.month,value:d.val,status:d.status,archived:!!d.archived};
+    if(d.id){ await sb.from('brand_deals').update(p).eq('id',d.id); }
+    else{ const {data}=await sb.from('brand_deals').insert(p).select().single(); if(data) d.id=data.id; }
+  },
+  async deleteDeal(d){ if(d.id) await sb.from('brand_deals').delete().eq('id',d.id); },
+  async saveTxnCat(t){ if(t.id) await sb.from('transactions').update({category:t.cat}).eq('id',t.id); },
+};
+// ─────────────────────────────────────────────────────────────
+
+const fmt = n => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString();
+const fmtK = n => (n < 0 ? '-$' : '$') + (Math.abs(n)/1000).toFixed(0) + 'k';
+
+const months = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+const arrow = n => n>=0 ? '▲' : '▼';
+const cls = n => n>=0 ? 'up' : 'down';
+
+// ---- editable forecast model ----
+// Every field here is exposed as a number input in the Cash forecast view.
+// ---- editable cash-flow grid (every cell is a number input) ----
+let openingBalance = 0;                 // starting cash, month 1
+const fill = v => Array(months.length).fill(v);
+
+let cashIn = [
+  {label:'Anticipated sales',  vals:[0,0,0,0,0,0,2500,0,0,0,0,0]},
+  {label:'Capital Investment', vals:[8000,0,0,0,0,0,0,0,0,0,0,0]},
+  {label:'Other income',       vals:fill(0)},
+];
+
+let cashOut = [
+  {label:'Subscriptions',     vals:[29.33,29.33,29.33,29.33,29.33,29.33,29.33,29.33,29.33,29.33,29.33,29.33]},
+  {label:'Professional fees', vals:[1400,0,0,0,0,0,0,0,0,0,0,0]},
+  {label:'Staff costs',       vals:[0,0,0,0,0,0,1000,1000,1000,1000,1000,1000]},
+  {label:'Working Capital',   vals:fill(225)},
+  {label:'Other expenses',    vals:fill(0)},
+];
+
+let financing = [
+  {label:'Capital contributions', vals:fill(0)},
+  {label:'Loans received',        vals:fill(0)},
+];
+
+const secArr = sec => sec==='in' ? cashIn : sec==='out' ? cashOut : financing;
+
+function compute(){
+  const n = months.length;
+  const colSum = rows => months.map((_,c)=>rows.reduce((s,r)=>s+(+r.vals[c]||0),0));
+  const inflows   = colSum(cashIn);
+  const outflows  = colSum(cashOut);
+  const financingT = colSum(financing);
+  const net = inflows.map((v,i)=>v - outflows[i] + financingT[i]);
+  const opening=[]; let bal=openingBalance;
+  const balance = net.map(x=>{opening.push(bal); return bal+=x;});
+  return {
+    inflows, outflows, financing: financingT, net, opening, balance,
+    startCash: openingBalance, eoyCash: balance[n-1],
+    avgNet: net.reduce((p,q)=>p+q,0)/n, posMonths: net.filter(x=>x>=0).length,
+  };
+}
+let F = compute();
+
+function balanceSVG(){
+  const balance=F.balance;
+  const W=640,H=130,padL=52,padR=16,padT=12,padB=22;
+  const lo=Math.min(...balance,0), hi=Math.max(...balance);
+  const max=hi+(hi-lo)*0.08, min=lo;
+  const x=i=>padL+(i*(W-padL-padR))/(months.length-1);
+  const y=v=>padT+(1-(v-min)/((max-min)||1))*(H-padT-padB);
+  const pts=balance.map((v,i)=>`${x(i)},${y(v)}`).join(' ');
+  const area=`${padL},${y(min)} ${pts} ${x(months.length-1)},${y(min)}`;
+  let grid='';
+  for(let g=0;g<=3;g++){const v=min+(max-min)*g/3,yy=y(v);
+    grid+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#2a2d30" stroke-width="1"/>
+           <text x="${padL-8}" y="${yy+3}" fill="#6c6f72" font-size="10" text-anchor="end">${fmtK(v)}</text>`;}
+  let xl='';months.forEach((m,i)=>{xl+=`<text x="${x(i)}" y="${H-6}" fill="#6c6f72" font-size="10" text-anchor="middle">${m}</text>`;});
+  const dots=balance.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="2.5" fill="#3ecf8e"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">
+    ${grid}
+    <polygon points="${area}" fill="#3ecf8e" opacity="0.08"/>
+    <polyline points="${pts}" fill="none" stroke="#3ecf8e" stroke-width="2"/>
+    ${dots}${xl}
+  </svg>`;
+}
+
+
+function kpiHTML(){
+  const f=F, d=f.eoyCash-f.startCash, totNet=f.net.reduce((a,b)=>a+b,0);
+  return `<div class="kpis">
+    <div class="kpi"><div class="label">Cash on hand</div><div class="val">${fmt(f.startCash)}</div><div class="delta ${cls(f.net[0])}">${arrow(f.net[0])} ${fmt(f.net[0])} month 1</div></div>
+    <div class="kpi"><div class="label">Avg monthly net</div><div class="val">${fmt(f.avgNet)}</div><div class="delta ${cls(f.avgNet)}">${arrow(f.avgNet)} positive ${f.posMonths} / 12 mo</div></div>
+    <div class="kpi"><div class="label">Projected EOY cash</div><div class="val">${fmt(f.eoyCash)}</div><div class="delta ${cls(d)}">${arrow(d)} ${fmt(d)} vs today</div></div>
+    <div class="kpi"><div class="label">Net cash flow (12 mo)</div><div class="val">${fmt(totNet)}</div><div class="delta">total in − out</div></div>
+  </div>`;
+}
+
+function numfmt(n){ return Number(Math.round(n||0)).toLocaleString('en-US'); }
+const toNum = s => { const v = parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(v) ? 0 : v; };
+
+function gridHTML(){
+  const M = months;
+  const editRow = (r,sec,ri) => `<tr>
+      <td class="rl"><span class="rl-cell"><button class="row-del" data-sec="${sec}" data-row="${ri}" title="Remove row" aria-label="Remove row">×</button><input class="rl-in" data-sec="${sec}" data-row="${ri}" value="${r.label}" aria-label="Row name"></span></td>
+      ${r.vals.map((v,c)=>`<td class="cellwrap"><input class="cell" type="text" inputmode="decimal" data-sec="${sec}" data-row="${ri}" data-col="${c}" value="${numfmt(v)}" aria-label="${r.label} ${M[c]}"><span class="fill-handle" aria-hidden="true"></span></td>`).join('')}
+    </tr>`;
+  const addBtn = sec => `<tr class="addrow"><td class="rl"><button class="row-add" data-sec="${sec}">+ Add row</button></td><td colspan="${M.length}"></td></tr>`;
+  const totRow = (label,id) => `<tr class="tot"><td class="rl">${label}</td>${M.map((_,c)=>`<td class="cnum" id="${id}-${c}"></td>`).join('')}</tr>`;
+  return `<div style="overflow-x:auto"><table class="grid-fc">
+    <thead><tr><th class="rl"></th>${M.map(m=>`<th>${m}</th>`).join('')}</tr></thead>
+    <tbody>
+      <tr class="sec"><td class="rl">Cash in</td>${M.map(()=>'<td></td>').join('')}</tr>
+      ${cashIn.map((r,i)=>editRow(r,'in',i)).join('')}
+      ${addBtn('in')}
+      ${totRow('Total cash in (A)','tin')}
+      <tr class="sec"><td class="rl">Cash out</td>${M.map(()=>'<td></td>').join('')}</tr>
+      ${cashOut.map((r,i)=>editRow(r,'out',i)).join('')}
+      ${addBtn('out')}
+      ${totRow('Total cash out (B)','tout')}
+      <tr class="sec"><td class="rl">Financing</td>${M.map(()=>'<td></td>').join('')}</tr>
+      ${financing.map((r,i)=>editRow(r,'fin',i)).join('')}
+      ${addBtn('fin')}
+      ${totRow('Total financing (C)','tfin')}
+      ${totRow('Net cash flow (A − B + C)','net')}
+      <tr class="sub"><td class="rl">Opening balance</td>${M.map((_,c)=>`<td class="cnum" id="open-${c}"></td>`).join('')}</tr>
+      <tr class="tot"><td class="rl">Closing balance</td>${M.map((_,c)=>`<td class="cnum" id="close-${c}"></td>`).join('')}</tr>
+    </tbody>
+  </table></div>`;
+}
+
+function fillComputed(){
+  months.forEach((_,c)=>{
+    document.getElementById('tin-'+c).textContent  = fmtK(F.inflows[c]);
+    document.getElementById('tout-'+c).textContent = fmtK(F.outflows[c]);
+    document.getElementById('tfin-'+c).textContent = fmtK(F.financing[c]);
+    const ncell = document.getElementById('net-'+c);
+    ncell.textContent = fmtK(F.net[c]); ncell.style.color = F.net[c]>=0 ? '#3ecf8e' : '#ff6b6b';
+    document.getElementById('open-'+c).textContent  = fmtK(F.opening[c]);
+    document.getElementById('close-'+c).textContent = fmtK(F.balance[c]);
+  });
+}
+
+function forecastHTML(){
+  return `
+    <div id="fc-kpi">${kpiHTML()}</div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Projected cash balance</h3><div class="h-sub">Closing balance · end of each month</div></div><div class="legend"><span><i style="background:#3ecf8e"></i>Balance</span></div></div>
+      <div id="fc-balance">${balanceSVG()}</div>
+    </div>
+    <div class="card mt">
+      <div class="card-head">
+        <div><h3>Cash flow forecast</h3><div class="h-sub">Edit any cell or row name · add or remove rows · totals update live</div></div>
+        <div class="afield" style="flex-direction:row;align-items:center;gap:8px"><label style="white-space:nowrap">Starting cash</label><div class="in-wrap" style="width:150px"><span class="in-pre">$</span><input class="in" type="text" inputmode="decimal" id="startcash" value="${numfmt(openingBalance)}" aria-label="Starting cash"></div></div>
+      </div>
+      <div id="fc-grid"></div>
+    </div>`;
+}
+
+function updateForecast(){
+  F = compute();
+  document.getElementById('fc-kpi').innerHTML = kpiHTML();
+  fillComputed();
+  document.getElementById('fc-balance').innerHTML = balanceSVG();
+}
+
+function renderGrid(){
+  document.getElementById('fc-grid').innerHTML = gridHTML();
+  bindGrid();
+  fillComputed();
+}
+
+function refreshAll(){
+  F = compute();
+  document.getElementById('fc-kpi').innerHTML = kpiHTML();
+  renderGrid();
+}
+
+function bindGrid(){
+  const grid = document.getElementById('fc-grid');
+  grid.querySelectorAll('.cell').forEach(inp=>{
+    const arr = () => secArr(inp.dataset.sec);
+    const ri = +inp.dataset.row, c = +inp.dataset.col;
+    inp.addEventListener('focus',()=>{ inp.value = String(arr()[ri].vals[c]); inp.select(); });
+    inp.addEventListener('input',()=>{ arr()[ri].vals[c] = toNum(inp.value); updateForecast(); });
+    inp.addEventListener('blur',()=>{ inp.value = numfmt(arr()[ri].vals[c]); db.upsertForecastRow(arr()[ri], inp.dataset.sec, ri); });
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        inp.value = numfmt(arr()[ri].vals[c]);
+        const next = grid.querySelector(`.cell[data-sec="${inp.dataset.sec}"][data-row="${ri+1}"][data-col="${c}"]`);
+        if(next) next.focus(); else inp.blur();
+      }
+    });
+  });
+  grid.querySelectorAll('.rl-in').forEach(inp=>{
+    const arr = secArr(inp.dataset.sec);
+    inp.addEventListener('input',()=>{ arr[+inp.dataset.row].label = inp.value; });
+    inp.addEventListener('blur',()=>{ db.upsertForecastRow(arr[+inp.dataset.row], inp.dataset.sec, +inp.dataset.row); });
+  });
+  grid.querySelectorAll('.row-del').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const row = secArr(b.dataset.sec)[+b.dataset.row];
+      db.deleteForecastRow(row);
+      secArr(b.dataset.sec).splice(+b.dataset.row,1);
+      refreshAll();
+    });
+  });
+  grid.querySelectorAll('.row-add').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const newRow = {label:'New item', vals:fill(0)};
+      secArr(b.dataset.sec).push(newRow);
+      refreshAll();
+      const arr = secArr(b.dataset.sec);
+      db.upsertForecastRow(newRow, b.dataset.sec, arr.length-1);
+    });
+  });
+  grid.querySelectorAll('.fill-handle').forEach(h=>h.addEventListener('mousedown', startFill));
+}
+
+// ---- drag-to-fill a value across months within a row ----
+let fillState = null;
+function fillRowCells(sec,row){ return [...document.querySelectorAll(`#fc-grid .cell[data-sec="${sec}"][data-row="${row}"]`)]; }
+function startFill(e){
+  e.preventDefault();
+  const inp = e.target.closest('td').querySelector('.cell');
+  const sec = inp.dataset.sec, row = +inp.dataset.row, col = +inp.dataset.col;
+  fillState = { sec, row, col, target: col, value: secArr(sec)[row].vals[col] };
+  document.body.style.userSelect = 'none';
+  document.addEventListener('mousemove', onFillMove);
+  document.addEventListener('mouseup', endFill);
+}
+function onFillMove(e){
+  if(!fillState) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = el && el.closest && el.closest('.cell');
+  if(cell && cell.dataset.sec===fillState.sec && +cell.dataset.row===fillState.row) fillState.target = +cell.dataset.col;
+  const lo = Math.min(fillState.col, fillState.target), hi = Math.max(fillState.col, fillState.target);
+  fillRowCells(fillState.sec, fillState.row).forEach(c=>{
+    c.classList.toggle('fill-preview', +c.dataset.col>=lo && +c.dataset.col<=hi);
+  });
+}
+function endFill(){
+  document.removeEventListener('mousemove', onFillMove);
+  document.removeEventListener('mouseup', endFill);
+  document.body.style.userSelect = '';
+  if(!fillState) return;
+  const { sec, row, col, target, value } = fillState;
+  const lo = Math.min(col, target), hi = Math.max(col, target);
+  const arr = secArr(sec);
+  for(let c=lo;c<=hi;c++){
+    arr[row].vals[c] = value;
+    const inp = document.querySelector(`#fc-grid .cell[data-sec="${sec}"][data-row="${row}"][data-col="${c}"]`);
+    if(inp) inp.value = numfmt(value);
+  }
+  fillRowCells(sec,row).forEach(c=>c.classList.remove('fill-preview'));
+  fillState = null;
+  updateForecast();
+}
+
+function bindForecastInputs(){
+  renderGrid();
+  const sc = document.getElementById('startcash');
+  if(sc){
+    sc.addEventListener('focus',()=>{ sc.value = String(openingBalance); sc.select(); });
+    sc.addEventListener('input',()=>{ openingBalance = toNum(sc.value); updateForecast(); });
+    sc.addEventListener('blur',()=>{ sc.value = numfmt(openingBalance); db.saveOpeningBalance(openingBalance); });
+    sc.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); sc.value=numfmt(openingBalance); sc.blur(); } });
+  }
+}
+
+// ---- shared business data (illustrative) ----
+const partners = [
+  {name:'John', init:'Jn', color:'#ff4d4d', pct:50},
+  {name:'Joey', init:'Jy', color:'#5b9dff', pct:25},
+  {name:'Joe',  init:'Je', color:'#4fd1c5', pct:25},
+];
+const ytmTotalRev = 0;                // trailing 12-mo actuals (independent of forecast)
+const CATS = ['AdSense','Sponsorship','Brand deal','Affiliate','Memberships','Crew','Equipment','Software','Marketing','Travel','Meals','Professional fees','Taxes','Owner draw','Capital contribution','Owner loan','Transfer','Other'];
+const OWNER_CATS = ['Owner draw','Capital contribution','Owner loan'];
+const txns = [
+  {d:'Jul 01', desc:'Capital contribution — John', acct:'Business Checking', cat:'Capital contribution', amt:8000,   src:'Manual', partner:'John'},
+  {d:'Jul 01', desc:'CPA setup fee',               acct:'Business Checking', cat:'Professional fees',    amt:-1400,  src:'Manual'},
+  {d:'Jul 01', desc:'Subscriptions',               acct:'Business Checking', cat:'Software',             amt:-29.33, src:'Manual'},
+  {d:'Jul 01', desc:'Working Capital',             acct:'Business Checking', cat:'Other',                amt:-225,   src:'Manual'},
+];
+const PL_REV_CATS  = ['AdSense','Sponsorship','Brand deal','Affiliate','Memberships'];
+const PL_COGS_CATS = ['Crew','Equipment'];
+const PL_OPEX_CATS = ['Software','Marketing','Travel','Meals','Professional fees'];
+
+const SPONSOR_STATUSES = ['Outreach','Verbal','Negotiating','Signed','Invoiced','Paid','Declined'];
+const SPONSOR_MONTHS = ['TBD','Jun 2026','Jul 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026','Dec 2026','Jan 2027','Feb 2027','Mar 2027','Apr 2027','May 2027','Jun 2027','Jul 2027','Aug 2027','Sep 2027','Dec 2027'];
+const SPONSOR_STYLE = {
+  Outreach:    'background:var(--hover);color:var(--muted)',
+  Verbal:      'background:rgba(91,157,255,.14);color:#5b9dff',
+  Negotiating: 'background:rgba(245,184,78,.14);color:#f5b84e',
+  Signed:      'background:rgba(62,207,142,.13);color:#3ecf8e',
+  Invoiced:    'background:rgba(91,157,255,.14);color:#5b9dff',
+  Paid:        'background:rgba(62,207,142,.13);color:#3ecf8e',
+  Declined:    'background:rgba(255,107,107,.13);color:#ff6b6b',
+};
+let sponsors = [];
+let archivedSponsors = [];
+const PIPELINE_GROUPS = [
+  {label:'Outreach',      statuses:['Outreach'],             color:'var(--muted)'},
+  {label:'In discussion', statuses:['Verbal','Negotiating'], color:'var(--amber)'},
+  {label:'Confirmed',     statuses:['Signed','Invoiced'],    color:'var(--blue)'},
+  {label:'Paid',          statuses:['Paid'],                 color:'var(--pos)'},
+];
+
+let brandDeals = [];
+let archivedDeals = [];
+const DEAL_PARTNERS = ['Joey', 'Joe', 'Joey & Joe'];
+
+const RECOUP_TOTAL = 8000;
+let recoupCollected = 0;
+const REINVEST_TIERS = [
+  {label:'Pre-monetization', range:'0–1K subs',     reinvest:100, distribute:0},
+  {label:'Early stage',      range:'1K–10K subs',   reinvest:90,  distribute:10},
+  {label:'Growth stage',     range:'10K–50K subs',  reinvest:80,  distribute:20},
+  {label:'Scaled',           range:'50K–100K subs', reinvest:65,  distribute:35},
+  {label:'Established',      range:'100K+ subs',    reinvest:50,  distribute:50},
+];
+const CURRENT_TIER = 4; // 1.42M subs → Established
+
+const views = {
+  forecast: { title: 'Cash forecast', sub: 'Jul 2026 – Jun 2027 · 12-month projection' },
+
+  dashboard: {
+    title:'Dashboard', sub:'Snapshot · July 2026',
+    html:`
+    <div class="kpis">
+      <div class="kpi"><div class="label">Cash on hand</div><div class="val">${fmt(6346)}</div><div class="delta up">▲ closing balance · July 2026</div></div>
+      <div class="kpi"><div class="label">Revenue MTD</div><div class="val">${fmt(0)}</div><div class="delta">first month · no revenue yet</div></div>
+      <div class="kpi"><div class="label">Net cash MTD</div><div class="val">${fmt(-1654)}</div><div class="delta down">▼ startup expenses</div></div>
+      <div class="kpi"><div class="label">Tax reserve</div><div class="val">${fmt(0)}</div><div class="delta">not yet applicable</div></div>
+    </div>
+    <div class="grid-2 mt">
+      <div class="card">
+        <div class="card-head"><div><h3>Recent transactions</h3><div class="h-sub">July 2026 · Business Checking</div></div><span class="badge b-info">${txns.length} entries</span></div>
+        ${txns.slice(0,6).map(t=>`<div class="lrow"><div class="grow"><div>${t.desc}</div><div class="sub2">${t.d} · ${t.cat} · ${t.acct}</div></div><div class="num" style="color:${t.amt>=0?'var(--pos)':'var(--text)'}">${fmt(t.amt)}</div></div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3>July vs plan</h3><div class="h-sub">Month 1 · tracking to forecast</div></div></div>
+        ${[['Capital invested',8000,8000],['Total expenses',1654,1654],['Closing balance',6346,8000]].map(([k,a,b])=>{const p=Math.min(100,Math.round(a/b*100));return `<div style="padding:11px 0;border-bottom:1px solid var(--border)"><div class="row-between" style="margin-bottom:7px"><span>${k}</span><span class="num muted">${fmt(a)} / ${fmt(b)}</span></div><div class="bar"><span style="width:${p}%;background:${k==='Capital invested'?'var(--pos)':'var(--blue)'}"></span></div></div>`;}).join('')}
+      </div>
+    </div>
+    <div class="grid-3 mt">
+      <div class="card"><div class="label muted" style="font-size:12px">Subscribers</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
+      <div class="card"><div class="label muted" style="font-size:12px">Views (28d)</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
+      <div class="card"><div class="label muted" style="font-size:12px">Sponsor pipeline</div><div style="font-size:22px;font-weight:600;margin-top:6px">${fmt(0)}</div><div class="badge b-muted mt">No active deals</div></div>
+    </div>
+    <div class="grid-2 mt">
+      <div class="card">
+        <div class="card-head"><div><h3>Recoupment</h3><div class="h-sub">John's $8,000 investment · 20% of revenue until repaid</div></div><div class="num" style="color:var(--amber)">$0 / $8,000</div></div>
+        <div class="bar mt"><span style="width:0%;background:var(--amber)"></span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
+          <span style="color:var(--amber);font-weight:600">0% recouped</span>
+          <span class="muted">$8,000 remaining</span>
+        </div>
+        <div class="assump-item mt"><span class="k">While recouping</span><span class="v">20% → John · 80% → reinvestment</span></div>
+        <div class="assump-item" style="border-bottom:none"><span class="k">After recoup</span><span class="v">100% → reinvestment tiers</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3>Reinvestment tier</h3><div class="h-sub">Current · connect YouTube API for live count</div></div><span class="badge b-warn">Established</span></div>
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 0 10px">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:30px;font-weight:700;color:var(--amber)">50%</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Reinvest</div>
+          </div>
+          <div style="width:1px;background:var(--border);height:48px"></div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:30px;font-weight:700;color:var(--pos)">50%</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Distribute</div>
+          </div>
+        </div>
+        <div class="assump-item" style="border-bottom:none"><span class="k">Next tier up</span><span class="v muted">Already at max distribution</span></div>
+      </div>
+    </div>`
+  },
+
+  transactions: { title:'Transactions', sub:'July 2026 · Business Checking', build:txnsHTML },
+
+  pl: { title:'P&L', sub:'Current period · from classified transactions', build:plHTML },
+
+  balance: { title:'Balance sheet', sub:'As of Jul 31, 2026 · equity from transactions', build:balanceHTML },
+
+  tax: {
+    title:'Tax estimate', sub:'Tax year 2026 · quarterly estimates',
+    html:`
+    <div class="kpis">
+      <div class="kpi"><div class="label">Reserved to date</div><div class="val">${fmt(86400)}</div><div class="delta up">▲ 20% of inflows</div></div>
+      <div class="kpi"><div class="label">Est. owed YTD</div><div class="val">${fmt(79200)}</div><div class="delta up">covered by reserve</div></div>
+      <div class="kpi"><div class="label">Next payment</div><div class="val">${fmt(21400)}</div><div class="delta down">▼ due Sep 15</div></div>
+      <div class="kpi"><div class="label">Effective rate</div><div class="val">22.4%</div><div class="delta">blended fed + state</div></div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Quarterly estimates</h3><div class="h-sub">Pass-through to 3 partners</div></div></div>
+      <table>
+        <thead><tr><th style="text-align:left">Quarter</th><th>Net income</th><th>Est. tax</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Q1 · Jan–Mar</td><td class="num" style="color:var(--text)">${fmt(96000)}</td><td class="num" style="color:var(--text)">${fmt(21500)}</td><td><span class="badge b-pos">Paid</span></td></tr>
+          <tr><td>Q2 · Apr–Jun</td><td class="num" style="color:var(--text)">${fmt(102000)}</td><td class="num" style="color:var(--text)">${fmt(22800)}</td><td><span class="badge b-pos">Paid</span></td></tr>
+          <tr><td>Q3 · Jul–Sep</td><td class="num" style="color:var(--text)">${fmt(95000)}</td><td class="num" style="color:var(--text)">${fmt(21400)}</td><td><span class="badge b-warn">Due Sep 15</span></td></tr>
+          <tr><td>Q4 · Oct–Dec</td><td class="num muted">est. ${fmt(110000)}</td><td class="num muted">est. ${fmt(24600)}</td><td><span class="badge b-muted">Projected</span></td></tr>
+        </tbody>
+      </table>
+    </div>`
+  },
+
+  sponsors: { title:'Sponsors', sub:'Pipeline · deal tracker', build:sponsorsHTML },
+
+  channel: {
+    title:'Channel metrics', sub:'Via YouTube Data API · last 12 mo',
+    html:`
+    <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
+      <div class="kpi"><div class="label">Subscribers</div><div class="val">1.42M</div><div class="delta up">▲ +38k / 30d</div></div>
+      <div class="kpi"><div class="label">Views (12 mo)</div><div class="val">214M</div><div class="delta up">▲ +18% YoY</div></div>
+      <div class="kpi"><div class="label">Avg RPM</div><div class="val">$8.40</div><div class="delta up">▲ +$0.60</div></div>
+      <div class="kpi"><div class="label">Revenue / 1k views</div><div class="val">$3.92</div><div class="delta">incl. sponsors</div></div>
+      <div class="kpi"><div class="label">Engagement rate</div><div class="val">4.8%</div><div class="delta up">▲ +0.4pp vs prior yr</div></div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>YPP eligibility</h3><div class="h-sub">YouTube Partner Program · requirements as of Jun 15, 2026</div></div><span class="badge b-pos">● Monetized</span></div>
+      <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:13px">Subscribers</span>
+          <span style="font-size:12px;color:var(--pos);font-weight:600">1,420,000 / 1,000 ✓</span>
+        </div>
+        <div class="bar"><span style="width:100%;background:var(--pos)"></span></div>
+      </div>
+      <div style="text-align:center;padding:10px 0;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase">and one of the following</div>
+      <div style="padding:0 0 4px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div><span style="font-size:13px">Valid public watch hours</span><span style="font-size:11px;color:var(--muted);margin-left:8px">last 365 days</span></div>
+          <span style="font-size:12px;color:var(--pos);font-weight:600">285,000h / 4,000h ✓</span>
+        </div>
+        <div class="bar"><span style="width:100%;background:var(--pos)"></span></div>
+      </div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Monthly views</h3><div class="h-sub">Millions · drives AdSense</div></div></div>
+      <div class="mbars">${[14,15,14,16,18,24,17,15,16,17,18,20].map(v=>`<div class="mb" style="height:${v/24*100}%"></div>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--label)">${months.map(m=>`<span>${m}</span>`).join('')}</div>
+    </div>`
+  },
+
+  splits: { title:'Partner splits', sub:'3 partners · contributions, draws & equity', build:splitsHTML },
+
+  deals: { title:'Brand Deals', sub:'Personal · outside the partnership', build:dealsHTML },
+  admin: { title:'Admin', sub:'Settings · export', build:adminHTML },
+};
+
+// connector config pages
+['era','yt','drive'].forEach(k=>{
+  const meta={era:['Era · bank sync','Mercury + Amex','ok','Syncs transactions every 6 hours'],
+              yt:['YouTube Data API','Channel: Tube','ok','Pulls views, subs & revenue daily'],
+              drive:['Google Drive','Receipts folder','warn','Re-auth needed — token expires soon']}[k];
+  views[k]={title:meta[0],sub:meta[1],html:`
+    <div class="card" style="max-width:560px">
+      <div class="row-between"><div><h3>${meta[0]}</h3><div class="h-sub mt" style="margin-top:6px">${meta[3]}</div></div>
+        <span class="badge ${meta[2]==='ok'?'b-pos':'b-warn'}">${meta[2]==='ok'?'● Connected':'● Action needed'}</span></div>
+      <div class="assump-item mt"><span class="k">Account</span><span class="v">${meta[1]}</span></div>
+      <div class="assump-item"><span class="k">Last sync</span><span class="v">${meta[2]==='ok'?'2 hours ago':'1 day ago'}</span></div>
+      <div class="assump-item"><span class="k">Status</span><span class="v" style="color:${meta[2]==='ok'?'var(--pos)':'var(--amber)'}">${meta[2]==='ok'?'Healthy':'Re-authorize'}</span></div>
+    </div>`};
+});
+
+function placeholder(name,icon){
+  return {title:name,sub:'',html:`<div class="placeholder"><div class="big">${icon}</div><div class="t">${name}</div><div class="pill">View not built yet — next iteration</div></div>`};
+}
+const stubs = {
+  dashboard:['Dashboard','◧'], transactions:['Transactions','⇄'], pl:['P&L','▤'],
+  balance:['Balance sheet','▦'], tax:['Tax estimate','%'], sponsors:['Sponsors','◈'],
+  channel:['Channel metrics','▶'], splits:['Partner splits','◑'], deals:['Brand Deals','✦'],
+  era:['Era · bank sync','◍'], yt:['YouTube Data API','▶'], drive:['Google Drive','△']
+};
+Object.entries(stubs).forEach(([k,[n,i]])=>{ if(!views[k]) views[k]=placeholder(n,i); });
+
+// ---- Sponsors (editable rows + pipeline dashboard + archive) ----
+function sponsorsHTML(){
+  const open   = sponsors.filter(s=>!['Paid','Declined'].includes(s.status));
+  const closed = sponsors.filter(s=> ['Paid','Declined'].includes(s.status));
+  const pipeline = open.reduce((t,s)=>t+s.val,0);
+
+  const rows = sponsors.map((sp,i)=>`<tr>
+    <td style="padding:6px 12px 6px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="width:26px;height:26px;font-size:11px;background:var(--panel);border:1px solid var(--border);color:var(--muted);flex-shrink:0">${(sp.name||'?')[0].toUpperCase()}</div>
+        <input class="rl-in sp-name" data-i="${i}" value="${sp.name}" placeholder="Sponsor name" style="font-size:13px;color:var(--text);width:130px">
+      </div>
+    </td>
+    <td style="padding:6px 12px;border-bottom:1px solid var(--border)"><input class="rl-in sp-type" data-i="${i}" value="${sp.type}" placeholder="Type" style="width:140px"></td>
+    <td style="padding:6px 12px;border-bottom:1px solid var(--border)"><select class="sel sp-month" data-i="${i}">${SPONSOR_MONTHS.map(m=>`<option ${m===sp.month?'selected':''}>${m}</option>`).join('')}</select></td>
+    <td style="padding:6px 12px;border-bottom:1px solid var(--border)">
+      <select class="sel sponsor-sel" data-i="${i}" style="font-size:11px;font-weight:500;border:none;${SPONSOR_STYLE[sp.status]||''}">
+        ${SPONSOR_STATUSES.map(s=>`<option ${s===sp.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </td>
+    <td style="padding:6px 0 6px 12px;border-bottom:1px solid var(--border);text-align:right">
+      <div class="in-wrap" style="width:110px;margin-left:auto"><span class="in-pre">$</span><input class="in sp-val" data-i="${i}" value="${numfmt(sp.val)}" inputmode="decimal"></div>
+    </td>
+    <td style="padding:6px 0;border-bottom:1px solid var(--border);text-align:center">
+      <button class="row-del sp-del" data-i="${i}" title="Remove" style="opacity:.4">×</button>
+    </td>
+  </tr>`).join('');
+
+  const totalAll = sponsors.reduce((t,s)=>t+s.val,0);
+  const maxGroupVal = Math.max(...PIPELINE_GROUPS.map(g=>sponsors.filter(s=>g.statuses.includes(s.status)).reduce((t,s)=>t+s.val,0)),1);
+  const pipelineCard = `
+    <div class="card mt">
+      <div class="card-head"><div><h3>Pipeline summary</h3><div class="h-sub">Active deals by stage</div></div><div class="num muted">${fmt(totalAll)} total</div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        ${PIPELINE_GROUPS.map(g=>{
+          const gDeals=sponsors.filter(s=>g.statuses.includes(s.status));
+          const gVal=gDeals.reduce((t,s)=>t+s.val,0);
+          return `<div>
+            <div style="font-size:12px;font-weight:500;color:${g.color};margin-bottom:10px">${g.label}</div>
+            <div class="assump-item"><span class="k">Deals</span><span class="v">${gDeals.length}</span></div>
+            <div class="assump-item" style="border-bottom:none"><span class="k">Value</span><span class="v num" style="font-weight:600">${fmt(gVal)}</span></div>
+            <div class="bar mt"><span style="width:${Math.round(gVal/maxGroupVal*100)}%;background:${g.color}"></span></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  const archiveSection = archivedSponsors.length ? `
+    <div class="card mt">
+      <div class="card-head">
+        <div><h3>Archived sponsors</h3><div class="h-sub">${archivedSponsors.length} deal${archivedSponsors.length!==1?'s':''} · year-end archive</div></div>
+        <button class="row-add sp-unarchive" style="font-size:11px">Restore all</button>
+      </div>
+      ${archivedSponsors.map(sp=>`<div class="lrow" style="opacity:.55">
+        <div class="avatar" style="width:26px;height:26px;font-size:11px;background:var(--panel);border:1px solid var(--border);color:var(--muted)">${(sp.name||'?')[0].toUpperCase()}</div>
+        <div class="grow"><div>${sp.name}</div><div class="sub2">${sp.type} · ${sp.month}</div></div>
+        <span style="font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;${SPONSOR_STYLE[sp.status]||'background:var(--hover);color:var(--muted)'}">${sp.status}</span>
+        <div class="num" style="min-width:80px;text-align:right">${fmt(sp.val)}</div>
+      </div>`).join('')}
+    </div>` : '';
+
+  return `
+    <div class="card">
+      <div class="card-head"><div><h3>Sponsor pipeline</h3><div class="h-sub">${open.length} active deal${open.length!==1?'s':''}</div></div><div class="num muted">${fmt(pipeline)} open</div></div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:620px">
+        <thead><tr>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 8px 0;border-bottom:1px solid var(--border);font-weight:600">Sponsor</th>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600">Type</th>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600">Month</th>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600">Status</th>
+          <th style="text-align:right;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 0 8px 12px;border-bottom:1px solid var(--border);font-weight:600">Value</th>
+          <th style="border-bottom:1px solid var(--border);width:28px"></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px">
+        <button class="row-add sp-add">+ Add deal</button>
+        ${closed.length?`<button class="row-add sp-archive" style="color:var(--muted)">Archive ${closed.length} closed deal${closed.length!==1?'s':''} →</button>`:''}
+      </div>
+    </div>
+    ${pipelineCard}
+    ${archiveSection}`;
+}
+function bindSponsors(){
+  const re = () => { document.getElementById('content').innerHTML = sponsorsHTML(); bindSponsors(); };
+  document.querySelectorAll('.sp-name').forEach(inp=>{
+    inp.addEventListener('input',()=>{ sponsors[+inp.dataset.i].name = inp.value; });
+    inp.addEventListener('blur',()=>{ db.upsertSponsor(sponsors[+inp.dataset.i]); re(); });
+  });
+  document.querySelectorAll('.sp-type').forEach(inp=>{
+    inp.addEventListener('blur',()=>{ sponsors[+inp.dataset.i].type = inp.value; db.upsertSponsor(sponsors[+inp.dataset.i]); });
+  });
+  document.querySelectorAll('.sp-month').forEach(sel=>{
+    sel.addEventListener('change',()=>{ sponsors[+sel.dataset.i].month = sel.value; db.upsertSponsor(sponsors[+sel.dataset.i]); });
+  });
+  document.querySelectorAll('.sp-val').forEach(inp=>{
+    const i=+inp.dataset.i;
+    inp.addEventListener('focus',()=>{ inp.value=String(sponsors[i].val); inp.select(); });
+    inp.addEventListener('input',()=>{ sponsors[i].val=toNum(inp.value); });
+    inp.addEventListener('blur',()=>{ db.upsertSponsor(sponsors[i]); re(); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } });
+  });
+  document.querySelectorAll('.sponsor-sel').forEach(sel=>{
+    sel.addEventListener('change',()=>{ sponsors[+sel.dataset.i].status=sel.value; db.upsertSponsor(sponsors[+sel.dataset.i]); re(); });
+  });
+  document.querySelectorAll('.sp-del').forEach(b=>{
+    b.addEventListener('click',()=>{ db.deleteSponsor(sponsors[+b.dataset.i]); sponsors.splice(+b.dataset.i,1); re(); });
+  });
+  const add=document.querySelector('.sp-add');
+  if(add) add.addEventListener('click',()=>{
+    const sp={name:'New sponsor',type:'Integration',month:'TBD',val:0,status:'Outreach'};
+    sponsors.push(sp);
+    db.upsertSponsor(sp);
+    re();
+    const names=document.querySelectorAll('.sp-name');
+    if(names.length){ const last=names[names.length-1]; last.select(); last.focus(); }
+  });
+  const arch=document.querySelector('.sp-archive');
+  if(arch) arch.addEventListener('click',()=>{
+    const toArchive=sponsors.filter(s=>['Paid','Declined'].includes(s.status));
+    toArchive.forEach(s=>{ s.archived=true; db.upsertSponsor(s); });
+    archivedSponsors.push(...toArchive);
+    sponsors=sponsors.filter(s=>!['Paid','Declined'].includes(s.status));
+    re();
+  });
+  const unarch=document.querySelector('.sp-unarchive');
+  if(unarch) unarch.addEventListener('click',()=>{
+    archivedSponsors.forEach(s=>{ s.archived=false; db.upsertSponsor(s); });
+    sponsors.push(...archivedSponsors);
+    archivedSponsors=[];
+    re();
+  });
+}
+
+// ---- Brand Deals (editable rows + payouts dashboard + archive) ----
+function dealStats(deals){
+  const gross={Joey:0,Joe:0};
+  deals.forEach(d=>{
+    if(d.partner==='Joey') gross.Joey+=d.val;
+    else if(d.partner==='Joe') gross.Joe+=d.val;
+    else if(d.partner==='Joey & Joe'){gross.Joey+=d.val/2; gross.Joe+=d.val/2;}
+  });
+  const totalGross=gross.Joey+gross.Joe;
+  const find=n=>partners.find(p=>p.name===n);
+  return [
+    {...find('Joey'), gross:gross.Joey,  commission:gross.Joey*0.15,  net:gross.Joey*0.85},
+    {...find('Joe'),  gross:gross.Joe,   commission:gross.Joe*0.15,   net:gross.Joe*0.85},
+    {...find('John'), gross:0,           commission:totalGross*0.15,  net:totalGross*0.15},
+  ];
+}
+
+function dealsHTML(){
+  const thL = t=>`<th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 8px 0;border-bottom:1px solid var(--border);font-weight:600">${t}</th>`;
+  const open   = brandDeals.filter(d=>!['Paid','Declined'].includes(d.status));
+  const closed  = brandDeals.filter(d=> ['Paid','Declined'].includes(d.status));
+  const totalOpen = open.reduce((s,d)=>s+d.val,0);
+
+  const rows = brandDeals.map((d,i)=>{
+    const pm = partners.find(p=>p.name===d.partner)||partners[1];
+    const jy = partners.find(p=>p.name==='Joey'), je = partners.find(p=>p.name==='Joe');
+    const ava = d.partner==='Joey & Joe'
+      ? `<div style="display:flex;flex-shrink:0"><div class="avatar" style="width:20px;height:20px;font-size:9px;background:${jy.color};margin-right:-5px;border:1.5px solid var(--panel-2);z-index:1">${jy.init}</div><div class="avatar" style="width:20px;height:20px;font-size:9px;background:${je.color};border:1.5px solid var(--panel-2)">${je.init}</div></div>`
+      : `<div class="avatar" style="width:24px;height:24px;font-size:10px;background:${pm.color};flex-shrink:0">${pm.init}</div>`;
+    return `<tr>
+      <td style="padding:6px 12px 6px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px">
+          ${ava}
+          <select class="sel deal-partner" data-i="${i}">${DEAL_PARTNERS.map(p=>`<option ${p===d.partner?'selected':''}>${p}</option>`).join('')}</select>
+        </div>
+      </td>
+      <td style="padding:6px 12px;border-bottom:1px solid var(--border)"><input class="rl-in deal-name" data-i="${i}" value="${d.deal}" placeholder="Deal description" style="width:180px;color:var(--text);font-size:13px"></td>
+      <td style="padding:6px 12px;border-bottom:1px solid var(--border)"><select class="sel deal-month" data-i="${i}">${SPONSOR_MONTHS.map(m=>`<option ${m===d.month?'selected':''}>${m}</option>`).join('')}</select></td>
+      <td style="padding:6px 12px;border-bottom:1px solid var(--border)"><select class="sel deal-status" data-i="${i}" style="font-size:11px;font-weight:500;border:none;${SPONSOR_STYLE[d.status]||''}">${SPONSOR_STATUSES.map(s=>`<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td style="padding:6px 0 6px 12px;border-bottom:1px solid var(--border);text-align:right"><div class="in-wrap" style="width:110px;margin-left:auto"><span class="in-pre">$</span><input class="in deal-val" data-i="${i}" value="${numfmt(d.val)}" inputmode="decimal"></div></td>
+      <td style="padding:6px 0;border-bottom:1px solid var(--border);text-align:center"><button class="row-del deal-del" data-i="${i}" title="Remove" style="opacity:.4">×</button></td>
+    </tr>`;
+  }).join('');
+
+  const paidDeals = brandDeals.filter(d=>d.status==='Paid');
+  const stats = dealStats(paidDeals);
+  const totalPaid = paidDeals.reduce((s,d)=>s+d.val,0);
+  const maxNet = Math.max(...stats.map(s=>s.net), 1);
+
+  const payouts = `
+    <div class="card mt">
+      <div class="card-head"><div><h3>Payouts</h3><div class="h-sub">Paid deals only · John earns 15% booking fee on all deals</div></div><div class="num muted">${fmt(totalPaid)} total paid</div></div>
+      <div class="grid-3">
+        ${stats.map(s=>`<div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div class="avatar" style="background:${s.color}">${s.init}</div>
+            <span style="font-weight:500">${s.name}</span>
+          </div>
+          ${s.name==='John'
+            ? `<div class="assump-item"><span class="k">Booking fee (15%)</span><span class="v num" style="color:var(--pos)">+${fmt(s.commission)}</span></div>`
+            : `<div class="assump-item"><span class="k">Deals paid</span><span class="v num">${fmt(s.gross)}</span></div>
+               <div class="assump-item"><span class="k">Booking fee (15%)</span><span class="v num" style="color:var(--neg)">-${fmt(s.commission)}</span></div>`
+          }
+          <div class="assump-item" style="border-bottom:none"><span class="k" style="color:var(--text);font-weight:500">Net earned</span><span class="v num" style="font-size:15px;font-weight:600">${fmt(s.net)}</span></div>
+          <div class="bar mt"><span style="width:${Math.round(s.net/maxNet*100)}%;background:${s.color}"></span></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+  const archive = archivedDeals.length ? `
+    <div class="card mt">
+      <div class="card-head">
+        <div><h3>Archived</h3><div class="h-sub">${archivedDeals.length} deal${archivedDeals.length!==1?'s':''} · year-end archive</div></div>
+        <button class="row-add deal-unarchive" style="font-size:11px">Restore all</button>
+      </div>
+      ${archivedDeals.map(d=>{
+        const pm=partners.find(p=>p.name===d.partner)||partners[0];
+        return `<div class="lrow" style="opacity:.55">
+          <div class="avatar" style="width:24px;height:24px;font-size:10px;background:${pm.color}">${pm.init}</div>
+          <div class="grow"><div style="font-size:13px">${d.deal}</div><div class="sub2">${d.partner} · ${d.month}</div></div>
+          <span style="font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;${SPONSOR_STYLE[d.status]||'background:var(--hover);color:var(--muted)'}">${d.status}</span>
+          <div class="num" style="min-width:80px;text-align:right">${fmt(d.val)}</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  return `
+    <div class="card">
+      <div class="card-head">
+        <div><h3>Individual brand deals</h3><div class="h-sub">Kept separate from channel P&amp;L · ${open.length} open</div></div>
+        <div class="num muted">${fmt(totalOpen)} open</div>
+      </div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:580px">
+        <thead><tr>${thL('Partner')}${thL('Deal')}${thL('Month')}${thL('Status')}
+          <th style="text-align:right;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 0 8px 12px;border-bottom:1px solid var(--border);font-weight:600">Value</th>
+          <th style="border-bottom:1px solid var(--border);width:28px"></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px">
+        <button class="row-add deal-add">+ Add deal</button>
+        ${closed.length?`<button class="row-add deal-archive" style="color:var(--muted)">Archive ${closed.length} closed deal${closed.length!==1?'s':''} →</button>`:''}
+      </div>
+    </div>
+    ${payouts}
+    ${archive}`;
+}
+
+function bindDeals(){
+  const re=()=>{ document.getElementById('content').innerHTML=dealsHTML(); bindDeals(); };
+  document.querySelectorAll('.deal-partner').forEach(sel=>{
+    sel.addEventListener('change',()=>{ brandDeals[+sel.dataset.i].partner=sel.value; db.upsertDeal(brandDeals[+sel.dataset.i]); re(); });
+  });
+  document.querySelectorAll('.deal-name').forEach(inp=>{
+    inp.addEventListener('input',()=>{ brandDeals[+inp.dataset.i].deal=inp.value; });
+    inp.addEventListener('blur',()=>{ db.upsertDeal(brandDeals[+inp.dataset.i]); re(); });
+  });
+  document.querySelectorAll('.deal-month').forEach(sel=>{
+    sel.addEventListener('change',()=>{ brandDeals[+sel.dataset.i].month=sel.value; db.upsertDeal(brandDeals[+sel.dataset.i]); });
+  });
+  document.querySelectorAll('.deal-status').forEach(sel=>{
+    sel.addEventListener('change',()=>{ brandDeals[+sel.dataset.i].status=sel.value; db.upsertDeal(brandDeals[+sel.dataset.i]); re(); });
+  });
+  document.querySelectorAll('.deal-val').forEach(inp=>{
+    const i=+inp.dataset.i;
+    inp.addEventListener('focus',()=>{ inp.value=String(brandDeals[i].val); inp.select(); });
+    inp.addEventListener('input',()=>{ brandDeals[i].val=toNum(inp.value); });
+    inp.addEventListener('blur',()=>{ db.upsertDeal(brandDeals[i]); re(); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } });
+  });
+  document.querySelectorAll('.deal-del').forEach(b=>{
+    b.addEventListener('click',()=>{ db.deleteDeal(brandDeals[+b.dataset.i]); brandDeals.splice(+b.dataset.i,1); re(); });
+  });
+  const add=document.querySelector('.deal-add');
+  if(add) add.addEventListener('click',()=>{
+    const d={partner:'Joey',deal:'New deal',month:'TBD',val:0,status:'Outreach'};
+    brandDeals.push(d);
+    db.upsertDeal(d);
+    re();
+    const names=document.querySelectorAll('.deal-name');
+    if(names.length){ const last=names[names.length-1]; last.select(); last.focus(); }
+  });
+  const arch=document.querySelector('.deal-archive');
+  if(arch) arch.addEventListener('click',()=>{
+    const closed=brandDeals.filter(d=>['Paid','Declined'].includes(d.status));
+    closed.forEach(d=>{ d.archived=true; db.upsertDeal(d); });
+    archivedDeals.push(...closed);
+    brandDeals=brandDeals.filter(d=>!['Paid','Declined'].includes(d.status));
+    re();
+  });
+  const unarch=document.querySelector('.deal-unarchive');
+  if(unarch) unarch.addEventListener('click',()=>{
+    archivedDeals.forEach(d=>{ d.archived=false; db.upsertDeal(d); });
+    brandDeals.push(...archivedDeals);
+    archivedDeals=[];
+    re();
+  });
+}
+
+// ---- P&L (derived from transactions) ----
+function plData(){
+  const bycat = {};
+  txns.forEach(t=>{ bycat[t.cat]=(bycat[t.cat]||0)+t.amt; });
+  const revRows  = PL_REV_CATS .map(c=>[c, Math.max(0,bycat[c]||0)]).filter(([,v])=>v>0);
+  const cogsRows = PL_COGS_CATS.map(c=>[c, Math.abs(Math.min(0,bycat[c]||0))]).filter(([,v])=>v>0);
+  const opexRows = PL_OPEX_CATS.map(c=>[c, Math.abs(Math.min(0,bycat[c]||0))]).filter(([,v])=>v>0);
+  const totalRev  = revRows.reduce((s,[,v])=>s+v,0);
+  const totalCogs = cogsRows.reduce((s,[,v])=>s+v,0);
+  const gross     = totalRev - totalCogs;
+  const totalOpex = opexRows.reduce((s,[,v])=>s+v,0);
+  const opIncome  = gross - totalOpex;
+  return {revRows,cogsRows,opexRows,totalRev,totalCogs,gross,totalOpex,opIncome};
+}
+function plHTML(){
+  const d = plData();
+  const pct = (n,tot) => tot ? Math.round(n/tot*100) : 0;
+  const none = '<tr><td colspan="2" style="color:var(--muted);padding:10px 12px;font-size:12px">None classified yet — set categories in Transactions</td></tr>';
+  return `
+    <div class="kpis">
+      <div class="kpi"><div class="label">Revenue (period)</div><div class="val">${fmt(d.totalRev)}</div><div class="delta up">${d.revRows.length} stream${d.revRows.length!==1?'s':''}</div></div>
+      <div class="kpi"><div class="label">Gross profit</div><div class="val">${fmt(d.gross)}</div><div class="delta ${cls(d.gross)}">${pct(d.gross,d.totalRev)}% margin</div></div>
+      <div class="kpi"><div class="label">Operating income</div><div class="val">${fmt(d.opIncome)}</div><div class="delta ${cls(d.opIncome)}">${pct(d.opIncome,d.totalRev)}% op margin</div></div>
+      <div class="kpi"><div class="label">Total costs</div><div class="val">${fmt(d.totalCogs+d.totalOpex)}</div><div class="delta muted">content + operating</div></div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Income statement</h3><div class="h-sub">Current period · derived from classified transactions · reclassify in Transactions to update</div></div></div>
+      <table><tbody>
+        <tr class="section"><td>Revenue</td><td></td></tr>
+        ${d.revRows.length?d.revRows.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join(''):none}
+        <tr class="total"><td>Total revenue</td><td class="num">${fmt(d.totalRev)}</td></tr>
+        <tr class="section"><td>Cost of content</td><td></td></tr>
+        ${d.cogsRows.length?d.cogsRows.map(([k,v])=>`<tr><td>${k}</td><td class="num">(${fmt(v)})</td></tr>`).join(''):none}
+        <tr class="total"><td>Gross profit</td><td class="num" style="color:${d.gross>=0?'var(--pos)':'var(--neg)'}">${fmt(d.gross)}</td></tr>
+        <tr class="section"><td>Operating expenses</td><td></td></tr>
+        ${d.opexRows.length?d.opexRows.map(([k,v])=>`<tr><td>${k}</td><td class="num">(${fmt(v)})</td></tr>`).join(''):none}
+        <tr class="total"><td>Operating income</td><td class="num" style="color:${d.opIncome>=0?'var(--pos)':'var(--neg)'}">${fmt(d.opIncome)}</td></tr>
+      </tbody></table>
+    </div>`;
+}
+
+// ---- Balance sheet (equity derived from transactions) ----
+function balanceHTML(){
+  const stats = partnerStats();
+  const assets = [['Mercury checking',132400],['Tax reserve (savings)',86400],['Accounts receivable',54000],['Equipment (net)',38200]];
+  const liab   = [['Credit card (Amex)',9800],['Taxes payable',86400]];
+  const totalAssets = assets.reduce((s,[,v])=>s+v,0);
+  const totalLiab   = liab.reduce((s,[,v])=>s+v,0);
+  const totalEquity = totalAssets - totalLiab;
+  return `
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div><h3>Assets</h3></div></div>
+        <table><tbody>
+          ${assets.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join('')}
+          <tr class="total"><td>Total assets</td><td class="num">${fmt(totalAssets)}</td></tr>
+        </tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3>Liabilities &amp; equity</h3></div></div>
+        <table><tbody>
+          <tr class="section"><td>Liabilities</td><td></td></tr>
+          ${liab.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join('')}
+          <tr class="total"><td>Total liabilities</td><td class="num">${fmt(totalLiab)}</td></tr>
+          <tr class="section"><td>Partner equity</td><td></td></tr>
+          ${partners.map(p=>`<tr>
+            <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:20px;height:20px;font-size:10px;background:${p.color}">${p.init}</div>${p.name} (${p.pct}%)</div>
+            <div style="padding-left:28px;margin-top:3px;font-size:11px;color:var(--muted)">+${fmt(stats[p.name].contrib)} contrib · −${fmt(stats[p.name].draw)} drawn</div></td>
+            <td class="num" style="color:var(--text);vertical-align:top;padding-top:10px">${fmt(totalEquity*p.pct/100)}</td></tr>`).join('')}
+          <tr class="total"><td>Total liabilities &amp; equity</td><td class="num">${fmt(totalAssets)}</td></tr>
+        </tbody></table>
+      </div>
+    </div>`;
+}
+
+// ---- Transactions (editable classification) ----
+function txnsHTML(){
+  return `
+    <div class="card">
+      <div class="card-head"><div><h3>All transactions</h3><div class="h-sub">${txns.length} this month · synced via Era · change a category to reclassify</div></div><span class="badge b-pos">▲ all categorized</span></div>
+      <table>
+        <thead><tr><th>Date</th><th style="text-align:left">Description</th><th style="text-align:left">Category</th><th style="text-align:left">Partner</th><th style="text-align:left">Account</th><th style="text-align:left">Source</th><th>Amount</th></tr></thead>
+        <tbody>
+          ${txns.map((t,i)=>`<tr>
+            <td style="color:var(--muted)">${t.d}</td>
+            <td style="text-align:left;color:var(--text)">${t.desc}</td>
+            <td style="text-align:left"><select class="sel cat-sel" data-i="${i}">${CATS.map(c=>`<option ${c===t.cat?'selected':''}>${c}</option>`).join('')}</select></td>
+            <td style="text-align:left">${OWNER_CATS.includes(t.cat)?`<select class="sel ptn-sel" data-i="${i}">${partners.map(p=>`<option ${p.name===t.partner?'selected':''}>${p.name}</option>`).join('')}</select>`:'<span class="muted">—</span>'}</td>
+            <td style="text-align:left;color:var(--muted)">${t.acct}</td>
+            <td style="text-align:left;color:var(--muted)">${t.src}</td>
+            <td class="num" style="color:${t.amt>=0?'var(--pos)':'var(--text)'}">${fmt(t.amt)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+function bindTransactions(){
+  document.querySelectorAll('.cat-sel').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const i=+sel.dataset.i;
+      txns[i].cat = sel.value;
+      if(OWNER_CATS.includes(sel.value)){ if(!txns[i].partner) txns[i].partner = partners[0].name; }
+      else txns[i].partner = null;
+      db.saveTxnCat(txns[i]);
+      document.getElementById('content').innerHTML = txnsHTML();
+      bindTransactions();
+    });
+  });
+  document.querySelectorAll('.ptn-sel').forEach(sel=>{
+    sel.addEventListener('change',()=>{ txns[+sel.dataset.i].partner = sel.value; });
+  });
+}
+
+// ---- Partner splits (derived from transactions) ----
+function partnerStats(){
+  const s={}; partners.forEach(p=>s[p.name]={contrib:0,draw:0});
+  txns.forEach(t=>{
+    if(!t.partner || !s[t.partner]) return;
+    if(t.cat==='Capital contribution') s[t.partner].contrib += Math.abs(t.amt);
+    else if(t.cat==='Owner draw') s[t.partner].draw += Math.abs(t.amt);
+  });
+  return s;
+}
+function splitsHTML(){
+  const s = partnerStats();
+  const owners = txns.filter(t=>OWNER_CATS.includes(t.cat) && t.partner);
+  const pmeta = name => partners.find(p=>p.name===name) || {color:'var(--muted)',init:''};
+  const recoupPct = Math.round(recoupCollected / RECOUP_TOTAL * 100);
+  const recoupLeft = RECOUP_TOTAL - recoupCollected;
+  const recouped = recoupCollected >= RECOUP_TOTAL;
+  return `
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div><h3>Recoupment tracker</h3><div class="h-sub">John's $${RECOUP_TOTAL.toLocaleString()} investment</div></div><div class="num" style="color:var(--amber)">${fmt(recoupCollected)} / ${fmt(RECOUP_TOTAL)}</div></div>
+        <div class="bar mt"><span style="width:${recoupPct}%;background:var(--amber)"></span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
+          <span style="color:var(--amber);font-weight:600">${recoupPct}% recouped</span>
+          <span class="muted">${recouped ? 'Fully recouped ✓' : fmt(recoupLeft)+' remaining'}</span>
+        </div>
+        <div class="assump-item mt"><span class="k">${recouped ? 'Policy' : 'While recouping'}</span><span class="v">${recouped ? '100% → reinvestment tiers' : '20% → John · 80% → reinvestment'}</span></div>
+        <div class="assump-item" style="border-bottom:none"><span class="k">After recoup</span><span class="v muted">100% → reinvestment tiers</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h3>Active reinvestment tier</h3><div class="h-sub">${REINVEST_TIERS[CURRENT_TIER].label} · ${REINVEST_TIERS[CURRENT_TIER].range}</div></div></div>
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 0 10px">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:30px;font-weight:700;color:var(--amber)">${REINVEST_TIERS[CURRENT_TIER].reinvest}%</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Reinvest</div>
+          </div>
+          <div style="width:1px;background:var(--border);height:48px"></div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:30px;font-weight:700;color:var(--pos)">${REINVEST_TIERS[CURRENT_TIER].distribute}%</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Distribute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Reinvestment policy</h3><div class="h-sub">Revenue stays in the business until the channel earns the right to distribute</div></div></div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:480px">
+        <thead><tr>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 8px 0;border-bottom:1px solid var(--border);font-weight:600">Stage</th>
+          <th style="text-align:left;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600">Subscribers</th>
+          <th style="text-align:right;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600">Reinvest</th>
+          <th style="text-align:right;color:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 0 8px 12px;border-bottom:1px solid var(--border);font-weight:600">Distribute</th>
+        </tr></thead>
+        <tbody>${REINVEST_TIERS.map((t,i)=>{
+          const active = i===CURRENT_TIER;
+          return `<tr style="${active?'background:rgba(245,184,78,.07)':''}">
+            <td style="padding:10px 12px 10px 0;border-bottom:1px solid var(--border)">
+              <span style="font-weight:${active?'600':'400'};color:${active?'var(--amber)':'var(--text)'}">${active?'▶ ':''} ${t.label}</span>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-size:13px">${t.range}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;font-weight:${active?'600':'400'};color:${active?'var(--amber)':'var(--text)'}">${t.reinvest}%</td>
+            <td style="padding:10px 0 10px 12px;border-bottom:1px solid var(--border);text-align:right;font-weight:${active?'600':'400'};color:${active?'var(--pos)':'var(--text)'}">${t.distribute}%</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>
+    <div class="grid-3">
+      ${partners.map(p=>`<div class="card">
+        <div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:${p.color}">${p.init}</div><div><div style="font-weight:500">${p.name}</div><div class="sub2 muted">${p.pct}% equity</div></div></div>
+        <div class="assump-item mt"><span class="k">Contributed</span><span class="v">${fmt(s[p.name].contrib)}</span></div>
+        <div class="assump-item"><span class="k">Drawn</span><span class="v">${fmt(s[p.name].draw)}</span></div>
+        <div class="bar mt"><span style="width:${p.pct}%;background:${p.color}"></span></div>
+      </div>`).join('')}
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Owner transactions</h3><div class="h-sub">Pulled from Transactions — reclassify there to update this</div></div></div>
+      ${owners.length ? owners.map(t=>`<div class="lrow"><div class="avatar" style="background:${pmeta(t.partner).color}">${pmeta(t.partner).init}</div><div class="grow"><div>${t.desc}</div><div class="sub2">${t.d} · ${t.acct}</div></div><span class="badge ${t.cat==='Capital contribution'?'b-pos':t.cat==='Owner draw'?'b-warn':'b-info'}">${t.cat}</span><div class="num" style="min-width:90px;text-align:right;color:${t.amt>=0?'var(--pos)':'var(--text)'}">${fmt(t.amt)}</div></div>`).join('') : '<div class="muted" style="padding:14px 0">No owner contributions or draws classified yet — set a transaction category to "Owner draw" or "Capital contribution".</div>'}
+    </div>`;
+}
+
+// ---- Admin ----
+function adminHTML(){
+  const rMonths = [];
+  for(let yr=2025;yr<=2027;yr++)
+    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach(m=>rMonths.push(`${m} ${yr}`));
+  const moOpts = (sel) => rMonths.map(m=>`<option${m===sel?' selected':''}>${m}</option>`).join('');
+  const presets = [
+    ['Q1 2026','Jan 2026','Mar 2026'],['Q2 2026','Apr 2026','Jun 2026'],
+    ['H1 2026','Jan 2026','Jun 2026'],['Full year 2026','Jan 2026','Dec 2026'],
+  ];
+  return `
+    <div class="card">
+      <div class="card-head"><div><h3>CPA export pack</h3><div class="h-sub">P&amp;L · Balance sheet · Transaction ledger · Partner K-1s</div></div></div>
+      <div style="padding:12px 0 16px;color:var(--muted);font-size:13px;line-height:1.6">
+        Generates a print-ready PDF containing all four documents your CPA needs to file taxes.
+        Opens in a new tab — use <strong style="color:var(--text)">File → Print → Save as PDF</strong> to download.
+      </div>
+      <div style="border-top:1px solid var(--border);padding:16px 0 0">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--label);margin-bottom:10px">Export period</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">From</div>
+            <select class="sel" id="export-from">${moOpts('Jan 2026')}</select></div>
+          <div style="color:var(--muted);padding-top:16px">→</div>
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">To</div>
+            <select class="sel" id="export-to">${moOpts('Jun 2026')}</select></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          ${presets.map(([label,from,to])=>`<button class="row-add preset-period" data-from="${from}" data-to="${to}" style="font-size:11px">${label}</button>`).join('')}
+        </div>
+      </div>
+      <div style="padding:16px 0 4px;border-top:1px solid var(--border);margin-top:16px">
+        <button class="admin-export" style="background:var(--pos);color:#0d1117;border:none;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">↓ Export for CPA</button>
+      </div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>What's included</h3></div></div>
+      ${[
+        ['P&L statement','Income and expenses by category, derived from classified transactions'],
+        ['Balance sheet','Assets, liabilities, and partner equity as of period end'],
+        ['Transaction ledger','All transactions with date, description, category, and amount'],
+        ['Partner K-1 (×3)','Each partner\'s share of income, contributions, draws, and ending capital account'],
+      ].map(([t,d])=>`<div class="lrow"><div class="grow"><div style="font-size:13px">${t}</div><div class="sub2">${d}</div></div><span style="color:var(--pos);font-size:13px">✓</span></div>`).join('')}
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Account</h3></div></div>
+      <div class="lrow">
+        <div class="grow"><div style="font-size:13px;color:var(--muted)" id="admin-user-email">—</div></div>
+        <button id="signout-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">Sign out</button>
+      </div>
+    </div>`;
+}
+
+function generateCPAReport(){
+  const from = document.getElementById('export-from')?.value || 'Jan 2026';
+  const to   = document.getElementById('export-to')?.value   || 'Jun 2026';
+  const period = from === to ? from : `${from} – ${to}`;
+  const d = plData();
+  const stats = partnerStats();
+  const assets = [['Mercury checking',132400],['Tax reserve (savings)',86400],['Accounts receivable',54000],['Equipment (net)',38200]];
+  const liab   = [['Credit card (Amex)',9800],['Taxes payable',86400]];
+  const totalAssets = assets.reduce((s,[,v])=>s+v,0);
+  const totalLiab   = liab.reduce((s,[,v])=>s+v,0);
+  const totalEquity = totalAssets - totalLiab;
+  const f = n => '$' + Math.abs(Math.round(n)).toLocaleString('en-US');
+  const paren = n => n < 0 ? `(${f(n)})` : f(n);
+
+  const css = `
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a;margin:0;padding:0;font-size:13px}
+    .page{max-width:760px;margin:0 auto;padding:48px 40px}
+    h1{font-size:22px;font-weight:700;margin:0 0 4px}
+    h2{font-size:15px;font-weight:700;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid #1a1a1a;text-transform:uppercase;letter-spacing:.04em}
+    h3{font-size:13px;font-weight:600;margin:18px 0 8px;color:#444}
+    .meta{color:#666;font-size:12px;margin-bottom:32px}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px}
+    td,th{padding:7px 10px;text-align:left;border-bottom:1px solid #e8e8e8;font-size:12.5px}
+    th{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#666;background:#f7f7f7}
+    .num{text-align:right;font-variant-numeric:tabular-nums}
+    .section td{font-weight:600;background:#f3f3f3;font-size:12px}
+    .total td{font-weight:700;border-top:2px solid #1a1a1a;border-bottom:2px solid #1a1a1a}
+    .pb{page-break-before:always;padding-top:32px}
+    .cover{padding:80px 0 60px;border-bottom:3px solid #1a1a1a;margin-bottom:40px}
+    .k1-box{border:1px solid #ccc;border-radius:6px;padding:16px 20px;margin-bottom:16px}
+    .k1-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:12.5px}
+    .k1-row:last-child{border-bottom:none;font-weight:700;padding-top:8px}
+    .label-col{color:#555}
+    @media print{.pb{page-break-before:always}}
+  `;
+
+  const txRows = txns.map(t=>`<tr>
+    <td>${t.d}</td><td>${t.desc}</td><td>${t.cat}</td>
+    <td>${t.partner||'—'}</td><td>${t.acct}</td>
+    <td class="num" style="color:${t.amt>=0?'#16a34a':'#dc2626'}">${t.amt>=0?'+':''}${f(t.amt)}</td>
+  </tr>`).join('');
+
+  const k1HTML = partners.map(p=>{
+    const incShare = d.opIncome * p.pct / 100;
+    const contrib  = stats[p.name].contrib;
+    const draw     = stats[p.name].draw;
+    const ending   = contrib - draw + incShare;
+    return `
+      <div class="k1-box">
+        <h3 style="margin-top:0">${p.name} — ${p.pct}% partner</h3>
+        <div class="k1-row"><span class="label-col">Ordinary business income (share)</span><span>${paren(incShare)}</span></div>
+        <div class="k1-row"><span class="label-col">Capital contributions (period)</span><span>${f(contrib)}</span></div>
+        <div class="k1-row"><span class="label-col">Withdrawals / draws (period)</span><span>(${f(draw)})</span></div>
+        <div class="k1-row"><span class="label-col">Ending capital account</span><span>${paren(ending)}</span></div>
+      </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Tube Finance — CPA Export Pack</title>
+    <style>${css}</style></head><body><div class="page">
+    <div class="cover">
+      <h1>Tube Finance</h1>
+      <div class="meta">CPA Export Pack &nbsp;·&nbsp; Period: ${period} &nbsp;·&nbsp; Generated: ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+      <div style="color:#444;font-size:13px">This package contains: P&amp;L Statement · Balance Sheet · Transaction Ledger · Partner K-1s</div>
+    </div>
+
+    <h2>P&amp;L Statement</h2>
+    <table><thead><tr><th>Category</th><th class="num">Amount</th></tr></thead><tbody>
+      <tr class="section"><td colspan="2">Revenue</td></tr>
+      ${d.revRows.map(([k,v])=>`<tr><td>${k}</td><td class="num">${f(v)}</td></tr>`).join('')}
+      <tr class="total"><td>Total revenue</td><td class="num">${f(d.totalRev)}</td></tr>
+      <tr class="section"><td colspan="2">Cost of content</td></tr>
+      ${d.cogsRows.map(([k,v])=>`<tr><td>${k}</td><td class="num">(${f(v)})</td></tr>`).join('')}
+      <tr class="total"><td>Gross profit</td><td class="num">${paren(d.gross)}</td></tr>
+      <tr class="section"><td colspan="2">Operating expenses</td></tr>
+      ${d.opexRows.map(([k,v])=>`<tr><td>${k}</td><td class="num">(${f(v)})</td></tr>`).join('')}
+      <tr class="total"><td>Operating income (net)</td><td class="num">${paren(d.opIncome)}</td></tr>
+    </tbody></table>
+
+    <h2 class="pb">Balance Sheet</h2>
+    <h3>Assets</h3>
+    <table><thead><tr><th>Item</th><th class="num">Amount</th></tr></thead><tbody>
+      ${assets.map(([k,v])=>`<tr><td>${k}</td><td class="num">${f(v)}</td></tr>`).join('')}
+      <tr class="total"><td>Total assets</td><td class="num">${f(totalAssets)}</td></tr>
+    </tbody></table>
+    <h3>Liabilities</h3>
+    <table><thead><tr><th>Item</th><th class="num">Amount</th></tr></thead><tbody>
+      ${liab.map(([k,v])=>`<tr><td>${k}</td><td class="num">${f(v)}</td></tr>`).join('')}
+      <tr class="total"><td>Total liabilities</td><td class="num">${f(totalLiab)}</td></tr>
+    </tbody></table>
+    <h3>Partner equity</h3>
+    <table><thead><tr><th>Partner</th><th class="num">Equity share</th></tr></thead><tbody>
+      ${partners.map(p=>`<tr><td>${p.name} (${p.pct}%)</td><td class="num">${f(totalEquity*p.pct/100)}</td></tr>`).join('')}
+      <tr class="total"><td>Total equity</td><td class="num">${f(totalEquity)}</td></tr>
+    </tbody></table>
+
+    <h2 class="pb">Transaction Ledger</h2>
+    <table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Partner</th><th>Account</th><th class="num">Amount</th></tr></thead>
+    <tbody>${txRows}</tbody></table>
+
+    <h2 class="pb">Partner K-1 Schedules</h2>
+    <div style="color:#666;font-size:12px;margin-bottom:20px">Distributive share items · Partnership taxable year ending Jun 30, 2026</div>
+    ${k1HTML}
+  </div></body></html>`;
+
+  const w = window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),600);
+}
+
+function bindAdmin(){
+  document.querySelectorAll('.preset-period').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.getElementById('export-from').value = b.dataset.from;
+      document.getElementById('export-to').value   = b.dataset.to;
+    });
+  });
+  const btn = document.querySelector('.admin-export');
+  if(btn) btn.addEventListener('click', generateCPAReport);
+  const soBtn = document.getElementById('signout-btn');
+  if(soBtn){
+    const emailEl = document.getElementById('admin-user-email');
+    if(emailEl && currentUser) emailEl.textContent = `Signed in as ${currentUser.email}`;
+    soBtn.addEventListener('click', async () => { await sb.auth.signOut(); });
+  }
+}
+
+function render(view){
+  const v = views[view] || views.forecast;
+  const isForecast = (v === views.forecast);
+  document.getElementById('view-title').textContent = v.title;
+  document.getElementById('view-sub').textContent = v.sub;
+  document.getElementById('view-sub').style.display = v.sub ? 'block':'none';
+  document.getElementById('content').innerHTML = isForecast ? forecastHTML() : (v.build ? v.build() : v.html);
+  if(isForecast) bindForecastInputs();
+  else if(view==='transactions') bindTransactions();
+  else if(view==='sponsors') bindSponsors();
+  else if(view==='deals') bindDeals();
+  else if(view==='admin') bindAdmin();
+}
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    render(el.dataset.view);
+  });
+});
+
+async function init(){
+  showLoading();
+  try {
+    // Partners
+    const {data:pRows} = await sb.from('partners').select('*').order('split_pct',{ascending:false});
+    if(pRows?.length){
+      partners.length=0;
+      pRows.forEach(p=>partners.push({name:p.name,init:p.initials,color:p.color,pct:Number(p.split_pct)}));
+    }
+    // Forecast inputs
+    const {data:fcRows} = await sb.from('forecast_inputs').select('*').order('sort_order');
+    if(fcRows?.length){
+      cashIn.length=0; cashOut.length=0; financing.length=0;
+      fcRows.forEach(r=>{
+        const row={id:r.id,label:r.label,vals:r.vals};
+        if(r.section==='in') cashIn.push(row);
+        else if(r.section==='out') cashOut.push(row);
+        else financing.push(row);
+      });
+    }
+    // Settings
+    const {data:setRows} = await sb.from('settings').select('*');
+    setRows?.forEach(s=>{ if(s.key==='opening_balance') openingBalance=parseFloat(s.value)||0; });
+    // Recoupment
+    const {data:recRow} = await sb.from('recoupment').select('*').limit(1).maybeSingle();
+    if(recRow) recoupCollected=Number(recRow.collected);
+    // Transactions
+    const {data:tRows} = await sb.from('transactions').select('*, partners(name)').order('date',{ascending:false});
+    if(tRows){
+      txns.length=0;
+      tRows.forEach(t=>txns.push({
+        id:t.id,
+        d:new Date(t.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'2-digit'}).replace(',',''),
+        desc:t.description, acct:t.account, cat:t.category,
+        amt:Number(t.amount), src:t.source,
+        partner:t.partners?.name,
+      }));
+    }
+    // Sponsors
+    const {data:spRows} = await sb.from('sponsors').select('*').order('created_at');
+    if(spRows){
+      sponsors.length=0; archivedSponsors.length=0;
+      spRows.forEach(s=>{
+        const sp={id:s.id,name:s.name,type:s.type,month:s.month,val:Number(s.value),status:s.status};
+        if(s.archived) archivedSponsors.push(sp); else sponsors.push(sp);
+      });
+    }
+    // Brand deals
+    const {data:bdRows} = await sb.from('brand_deals').select('*').order('created_at');
+    if(bdRows){
+      brandDeals.length=0; archivedDeals.length=0;
+      bdRows.forEach(d=>{
+        const deal={id:d.id,partner:d.partner,deal:d.deal,month:d.month,val:Number(d.value),status:d.status};
+        if(d.archived) archivedDeals.push(deal); else brandDeals.push(deal);
+      });
+    }
+    F=compute();
+  } catch(e){ console.error('Supabase load error:',e); }
+  hideLoading();
+  render('dashboard');
+}
+
+let currentUser = null;
+
+function showLoginScreen(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-msg').textContent = '';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+}
+function hideLoginScreen(){
+  document.getElementById('login-screen').style.display = 'none';
+}
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const msg   = document.getElementById('login-msg');
+  const btn   = document.getElementById('login-btn');
+  if(!email || !pass){ msg.style.color='#ff4d4d'; msg.textContent='Enter email and password.'; return; }
+  btn.disabled = true;
+  const isSignup = btn.dataset.mode === 'signup';
+  btn.textContent = isSignup ? 'Creating account…' : 'Signing in…';
+  const { error } = isSignup
+    ? await sb.auth.signUp({ email, password: pass })
+    : await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false;
+  btn.textContent = isSignup ? 'Create account' : 'Sign in';
+  if(error){ msg.style.color='#ff4d4d'; msg.textContent = error.message; }
+  else if(isSignup){ msg.style.color='#3ecf8e'; msg.textContent = 'Check your email to confirm, then sign in.'; }
+});
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+function toggleAuthMode(e){
+  e.preventDefault();
+  const btn    = document.getElementById('login-btn');
+  const footer = document.getElementById('toggle-signup').parentElement;
+  if(btn.dataset.mode === 'signup'){
+    btn.dataset.mode = '';
+    btn.textContent  = 'Sign in';
+    footer.innerHTML = 'First time? <a id="toggle-signup" href="#" style="color:#5b9dff;text-decoration:none">Create account</a>';
+  } else {
+    btn.dataset.mode = 'signup';
+    btn.textContent  = 'Create account';
+    footer.innerHTML = 'Already have an account? <a id="toggle-signup" href="#" style="color:#5b9dff;text-decoration:none">Sign in</a>';
+  }
+  document.getElementById('toggle-signup').addEventListener('click', toggleAuthMode);
+}
+document.getElementById('toggle-signup').addEventListener('click', toggleAuthMode);
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  currentUser = session?.user ?? null;
+  if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
+    if(currentUser){ hideLoginScreen(); await init(); }
+    else showLoginScreen();
+  } else if(event === 'SIGNED_OUT'){
+    showLoginScreen();
+  }
+});
+</script>
+</body>
+</html>
