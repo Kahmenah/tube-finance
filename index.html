@@ -330,6 +330,8 @@
 const _SB_URL  = 'https://thbmigoqjapzszmqzvlq.supabase.co';
 const _SB_ANON = 'sb_publishable_LhapnBGDdIfwY1TCiG9Bcw__v5FigrP';
 const sb = window.supabase.createClient(_SB_URL, _SB_ANON);
+// Pre-warm the Supabase connection so init() doesn't hit a cold start
+sb.from('settings').select('key').limit(1).then(()=>{}).catch(()=>{});
 const showLoading = () => { document.getElementById('loading').style.display='flex'; };
 const hideLoading = () => { document.getElementById('loading').style.display='none'; };
 
