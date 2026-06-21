@@ -286,6 +286,7 @@
   <div class="nav-group-label">Overview</div>
   <div class="nav-item active" data-view="dashboard"><span class="ico">◧</span> Dashboard</div>
   <div class="nav-item" data-view="forecast"><span class="ico">◴</span> Cash forecast</div>
+  <div class="nav-item" data-view="actuals"><span class="ico">◎</span> Actuals</div>
 
   <div class="nav-group-label">Money</div>
   <div class="nav-item" data-view="transactions"><span class="ico">⇄</span> Transactions</div>
@@ -671,6 +672,7 @@ const CURRENT_TIER = 4; // 1.42M subs → Established
 
 const views = {
   forecast: { title: 'Cash forecast', sub: 'Jul 2026 – Jun 2027 · 12-month projection' },
+  actuals:  { title: 'Actuals vs Forecast', sub: 'Month-by-month comparison', build: actualsHTML },
 
   dashboard: {
     title:'Dashboard', sub:'Snapshot · July 2026',
@@ -1309,6 +1311,92 @@ function splitsHTML(){
 }
 
 // ---- Admin ----
+function actualsHTML(){
+  const lbls = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  const todayYM = new Date().toISOString().slice(0,7);
+  const rows = lbls.map((lbl,i) => {
+    const d   = new Date(2026,6+i,1);
+    const ym  = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const fcIn  = cashIn.reduce((s,r)=>s+(Number(r.vals[i])||0),0);
+    const fcOut = cashOut.reduce((s,r)=>s+(Number(r.vals[i])||0),0);
+    const acIn  = txns.filter(t=>t.ym===ym&&t.amt>0).reduce((s,t)=>s+t.amt,0);
+    const acOut = txns.filter(t=>t.ym===ym&&t.amt<0).reduce((s,t)=>s+Math.abs(t.amt),0);
+    const has   = txns.some(t=>t.ym===ym);
+    return { label:lbl+' '+(d.getFullYear().toString().slice(2)), ym, fcIn, fcOut,
+             fcNet:fcIn-fcOut, acIn, acOut, acNet:acIn-acOut, has, isPast:ym<=todayYM };
+  });
+
+  // Summary (months that have any transactions)
+  const active = rows.filter(r=>r.has);
+  const sumFcIn=active.reduce((s,r)=>s+r.fcIn,0), sumFcOut=active.reduce((s,r)=>s+r.fcOut,0);
+  const sumAcIn=active.reduce((s,r)=>s+r.acIn,0), sumAcOut=active.reduce((s,r)=>s+r.acOut,0);
+  const sumFcNet=sumFcIn-sumFcOut, sumAcNet=sumAcIn-sumAcOut;
+
+  const fv = v => (v<0?'-':'')+fmt(Math.abs(v));
+  const vc = v => v>0?'var(--pos)':v<0?'var(--neg)':'var(--muted)';
+
+  // SVG chart — one bar per month, grey=forecast, coloured=actual
+  const maxV = Math.max(...rows.map(r=>Math.max(Math.abs(r.fcNet),Math.abs(r.acNet))),1);
+  const CH=72, colW=44, barW=14, svgW=12*colW+20, midY=CH;
+  const bh = v => Math.round(Math.abs(v)/maxV*CH);
+  const bars = rows.map((r,i)=>{
+    const x=10+i*colW;
+    const fh=bh(r.fcNet), ah=bh(r.acNet);
+    const fcRect = r.fcNet>=0
+      ? `<rect x="${x}" y="${midY-fh}" width="${barW}" height="${Math.max(fh,2)}" fill="#2e3235" rx="2"/>`
+      : `<rect x="${x}" y="${midY}" width="${barW}" height="${Math.max(fh,2)}" fill="#2e3235" rx="2"/>`;
+    const acRect = r.has ? (r.acNet>=0
+      ? `<rect x="${x+barW+2}" y="${midY-ah}" width="${barW}" height="${Math.max(ah,2)}" fill="#3ecf8e" rx="2" opacity=".85"/>`
+      : `<rect x="${x+barW+2}" y="${midY}" width="${barW}" height="${Math.max(ah,2)}" fill="#ff4d4d" rx="2" opacity=".85"/>`) : '';
+    const tick=`<text x="${x+barW+1}" y="${CH*2+14}" text-anchor="middle" font-size="9" fill="#6c6f72">${r.label.split(' ')[0]}</text>`;
+    return fcRect+acRect+tick;
+  }).join('');
+
+  const svg=`<svg viewBox="0 0 ${svgW} ${CH*2+22}" style="width:100%;max-width:640px;display:block">
+    <line x1="10" y1="${midY}" x2="${svgW-10}" y2="${midY}" stroke="#2a2d30" stroke-width="1"/>
+    ${bars}
+    <text x="12" y="10" font-size="9" fill="#6c6f72">▪ Forecast</text>
+    <text x="70" y="10" font-size="9" fill="#3ecf8e">▪ Actual</text>
+  </svg>`;
+
+  // Table
+  const trs = rows.map(r=>`
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 10px;font-size:12px;white-space:nowrap;color:${r.isPast?'var(--text)':'var(--muted)'}">${r.label}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right">${fmt(r.fcIn)}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right;color:${r.has?'var(--text)':'var(--muted)'}">${r.has?fmt(r.acIn):'—'}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right">${fmt(r.fcOut)}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right;color:${r.has?'var(--text)':'var(--muted)'}">${r.has?fmt(r.acOut):'—'}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right;color:${vc(r.fcNet)}">${fv(r.fcNet)}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right;color:${r.has?vc(r.acNet):'var(--muted)'}">${r.has?fv(r.acNet):'—'}</td>
+      <td style="padding:9px 10px;font-size:12px;text-align:right;color:${r.has?vc(r.acNet-r.fcNet):'var(--muted)'}">${r.has?(r.acNet-r.fcNet>=0?'+':'')+fv(r.acNet-r.fcNet):'—'}</td>
+    </tr>`).join('');
+
+  const thStyle = `padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--label);font-weight:600;text-align:right`;
+  return `
+    <div class="kpis">
+      <div class="kpi"><div class="label">Cash In</div><div class="val">${active.length?fmt(sumAcIn):fmt(sumFcIn)}</div><div class="delta ${sumAcIn>=sumFcIn?'up':'down'}">${active.length?fv(sumAcIn-sumFcIn)+' vs forecast':'forecast only'}</div></div>
+      <div class="kpi"><div class="label">Cash Out</div><div class="val">${active.length?fmt(sumAcOut):fmt(sumFcOut)}</div><div class="delta ${sumAcOut<=sumFcOut?'up':'down'}">${active.length?fv(sumAcOut-sumFcOut)+' vs forecast':'forecast only'}</div></div>
+      <div class="kpi"><div class="label">Net</div><div class="val ${sumAcNet>=0?'pos':'neg'}">${active.length?fv(sumAcNet):fv(sumFcNet)}</div><div class="delta ${sumAcNet>=sumFcNet?'up':'down'}">${active.length?fv(sumAcNet-sumFcNet)+' vs forecast':'forecast only'}</div></div>
+    </div>
+    <div class="card mt">
+      <div class="card-head"><div><h3>Monthly comparison</h3><div class="h-sub">Dark = forecast · green/red = actual</div></div></div>
+      <div style="padding:16px 0 8px">${svg}</div>
+    </div>
+    <div class="card mt" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:580px">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="${thStyle};text-align:left">Month</th>
+          <th style="${thStyle}">FC In</th><th style="${thStyle}">Act In</th>
+          <th style="${thStyle}">FC Out</th><th style="${thStyle}">Act Out</th>
+          <th style="${thStyle}">FC Net</th><th style="${thStyle}">Act Net</th>
+          <th style="${thStyle}">Variance</th>
+        </tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>`;
+}
+
 function adminHTML(){
   const rMonths = [];
   for(let yr=2025;yr<=2027;yr++)
@@ -1543,6 +1631,7 @@ async function init(){
       tRows.forEach(t=>txns.push({
         id:t.id,
         d:new Date(t.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'2-digit'}).replace(',',''),
+        ym:t.date.slice(0,7),
         desc:t.description, acct:t.account, cat:t.category,
         amt:Number(t.amount), src:t.source,
         partner:t.partners?.name,
