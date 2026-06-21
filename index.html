@@ -1600,40 +1600,26 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 
 async function init(){
   showLoading();
-  const loadingEl = document.getElementById('loading');
-  const setMsg = m => { if(loadingEl) loadingEl.textContent = m; };
-  // Force-render after 12s if Supabase never responds
-  const bailTimer = setTimeout(() => { hideLoading(); render('dashboard'); }, 12000);
   try {
-    // Partners
-    setMsg('Loading partners…');
-    const {data:pRows} = await sb.from('partners').select('*').order('split_pct',{ascending:false});
+    const [pRows, fcRows, setRows, recRow, tRows, spRows, bdRows] = await Promise.all([
+      sb.from('partners').select('*').order('split_pct',{ascending:false}).then(r=>r.data),
+      sb.from('forecast_inputs').select('*').order('sort_order').then(r=>r.data),
+      sb.from('settings').select('*').then(r=>r.data),
+      sb.from('recoupment').select('*').limit(1).maybeSingle().then(r=>r.data),
+      sb.from('transactions').select('*, partners(name)').order('date',{ascending:false}).then(r=>r.data),
+      sb.from('sponsors').select('*').order('created_at').then(r=>r.data),
+      sb.from('brand_deals').select('*').order('created_at').then(r=>r.data),
+    ]);
     if(pRows?.length){
       partners.length=0;
       pRows.forEach(p=>partners.push({name:p.name,init:p.initials,color:p.color,pct:Number(p.split_pct)}));
     }
-    // Forecast inputs
-    setMsg('Loading forecast…');
-    const {data:fcRows} = await sb.from('forecast_inputs').select('*').order('sort_order');
     if(fcRows?.length){
       cashIn.length=0; cashOut.length=0; financing.length=0;
-      fcRows.forEach(r=>{
-        const row={id:r.id,label:r.label,vals:r.vals};
-        if(r.section==='in') cashIn.push(row);
-        else if(r.section==='out') cashOut.push(row);
-        else financing.push(row);
-      });
+      fcRows.forEach(r=>{ const row={id:r.id,label:r.label,vals:r.vals}; if(r.section==='in') cashIn.push(row); else if(r.section==='out') cashOut.push(row); else financing.push(row); });
     }
-    // Settings
-    setMsg('Loading settings…');
-    const {data:setRows} = await sb.from('settings').select('*');
     setRows?.forEach(s=>{ if(s.key==='opening_balance') openingBalance=parseFloat(s.value)||0; });
-    // Recoupment
-    const {data:recRow} = await sb.from('recoupment').select('*').limit(1).maybeSingle();
     if(recRow) recoupCollected=Number(recRow.collected);
-    // Transactions
-    setMsg('Loading transactions…');
-    const {data:tRows} = await sb.from('transactions').select('*, partners(name)').order('date',{ascending:false});
     if(tRows){
       txns.length=0;
       tRows.forEach(t=>txns.push({
@@ -1645,29 +1631,10 @@ async function init(){
         partner:t.partners?.name,
       }));
     }
-    // Sponsors
-    setMsg('Loading sponsors…');
-    const {data:spRows} = await sb.from('sponsors').select('*').order('created_at');
-    if(spRows){
-      sponsors.length=0; archivedSponsors.length=0;
-      spRows.forEach(s=>{
-        const sp={id:s.id,name:s.name,type:s.type,month:s.month,val:Number(s.value),status:s.status};
-        if(s.archived) archivedSponsors.push(sp); else sponsors.push(sp);
-      });
-    }
-    // Brand deals
-    setMsg('Loading deals…');
-    const {data:bdRows} = await sb.from('brand_deals').select('*').order('created_at');
-    if(bdRows){
-      brandDeals.length=0; archivedDeals.length=0;
-      bdRows.forEach(d=>{
-        const deal={id:d.id,partner:d.partner,deal:d.deal,month:d.month,val:Number(d.value),status:d.status};
-        if(d.archived) archivedDeals.push(deal); else brandDeals.push(deal);
-      });
-    }
+    if(spRows){ sponsors.length=0; archivedSponsors.length=0; spRows.forEach(s=>{ const sp={id:s.id,name:s.name,type:s.type,month:s.month,val:Number(s.value),status:s.status}; if(s.archived) archivedSponsors.push(sp); else sponsors.push(sp); }); }
+    if(bdRows){ brandDeals.length=0; archivedDeals.length=0; bdRows.forEach(d=>{ const deal={id:d.id,partner:d.partner,deal:d.deal,month:d.month,val:Number(d.value),status:d.status}; if(d.archived) archivedDeals.push(deal); else brandDeals.push(deal); }); }
     F=compute();
-  } catch(e){ console.error('Supabase load error:',e); setMsg('Error: '+e.message); }
-  clearTimeout(bailTimer);
+  } catch(e){ console.error('Supabase load error:',e); }
   hideLoading();
   render('dashboard');
 }
