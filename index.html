@@ -640,12 +640,7 @@ const partners = [
 const ytmTotalRev = 0;                // trailing 12-mo actuals (independent of forecast)
 const CATS = ['AdSense','Sponsorship','Brand deal','Affiliate','Memberships','Crew','Equipment','Software','Marketing','Travel','Meals','Professional fees','Taxes','Owner draw','Capital contribution','Owner loan','Transfer','Other'];
 const OWNER_CATS = ['Owner draw','Capital contribution','Owner loan'];
-const txns = [
-  {d:'Jul 01', desc:'Capital contribution — John', acct:'Business Checking', cat:'Capital contribution', amt:8000,   src:'Manual', partner:'John'},
-  {d:'Jul 01', desc:'CPA setup fee',               acct:'Business Checking', cat:'Professional fees',    amt:-1400,  src:'Manual'},
-  {d:'Jul 01', desc:'Subscriptions',               acct:'Business Checking', cat:'Software',             amt:-29.33, src:'Manual'},
-  {d:'Jul 01', desc:'Working Capital',             acct:'Business Checking', cat:'Other',                amt:-225,   src:'Manual'},
-];
+const txns = [];
 const PL_REV_CATS  = ['AdSense','Sponsorship','Brand deal','Affiliate','Memberships'];
 const PL_COGS_CATS = ['Crew','Equipment'];
 const PL_OPEX_CATS = ['Software','Marketing','Travel','Meals','Professional fees'];
@@ -1711,7 +1706,6 @@ async function init(){
     const setRows= results[2].value?.data;
     const recRow = results[3].value?.data;
     const tRows  = results[4].value?.data;
-    console.log('DEBUG tRows:', tRows?.length, results[4].status, results[4].value?.error);
     const spRows = results[5].value?.data;
     const bdRows = results[6].value?.data;
     if(pRows?.length){
@@ -1724,7 +1718,7 @@ async function init(){
     }
     setRows?.forEach(s=>{ if(s.key==='opening_balance') openingBalance=parseFloat(s.value)||0; });
     if(recRow) recoupCollected=Number(recRow.collected);
-    if(tRows){
+    if(Array.isArray(tRows)){
       txns.length=0;
       tRows.forEach(t=>txns.push({
         id:t.id,
