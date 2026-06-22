@@ -1746,6 +1746,7 @@ async function init(){
 }
 
 let currentUser = null;
+let resetInProgress = false;
 
 function showLoginScreen(){
   hideLoading();
@@ -1839,12 +1840,21 @@ document.getElementById('reset-btn').addEventListener('click', async () => {
   if(pass.length < 6){ msg.style.color='#ff4d4d'; msg.textContent='Password must be at least 6 characters.'; return; }
   if(pass !== confirm){ msg.style.color='#ff4d4d'; msg.textContent='Passwords do not match — try again.'; return; }
   btn.disabled = true; btn.textContent = 'Saving…';
+  resetInProgress = true;
   const { error } = await sb.auth.updateUser({ password: pass });
   btn.disabled = false; btn.textContent = 'Set new password';
-  if(error){ msg.style.color='#ff4d4d'; msg.textContent = error.message; }
+  if(error){ resetInProgress = false; msg.style.color='#ff4d4d'; msg.textContent = error.message; }
   else {
-    msg.style.color='#3ecf8e'; msg.textContent = 'Password updated! Signing you in…';
-    setTimeout(() => { document.getElementById('reset-screen').style.display = 'none'; }, 1500);
+    const savedEmail = currentUser?.email || '';
+    msg.style.color='#3ecf8e'; msg.textContent = 'Password saved! Sign in below — your password manager will capture it.';
+    setTimeout(async () => {
+      document.getElementById('reset-screen').style.display = 'none';
+      await sb.auth.signOut();
+      resetInProgress = false;
+      if(savedEmail) document.getElementById('login-email').value = savedEmail;
+      document.getElementById('login-pass').value = '';
+      showLoginScreen();
+    }, 2000);
   }
 });
 
@@ -1857,8 +1867,8 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('reset-msg').textContent = '';
     document.getElementById('reset-pass').value = '';
   } else if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION'){
-    if(currentUser){ hideLoginScreen(); showLoading(); await init(); }
-    else showLoginScreen();
+    if(currentUser && !resetInProgress){ hideLoginScreen(); showLoading(); await init(); }
+    else if(!currentUser) showLoginScreen();
   } else if(event === 'SIGNED_OUT'){
     showLoginScreen();
   }
