@@ -1711,6 +1711,7 @@ async function init(){
     const setRows= results[2].value?.data;
     const recRow = results[3].value?.data;
     const tRows  = results[4].value?.data;
+    console.log('DEBUG tRows:', tRows?.length, results[4].status, results[4].value?.error);
     const spRows = results[5].value?.data;
     const bdRows = results[6].value?.data;
     if(pRows?.length){
