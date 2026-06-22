@@ -1104,11 +1104,9 @@ function plHTML(){
 
 // ---- Dashboard (live from transactions + forecast) ----
 function dashboardHTML(){
-  const nowYM   = new Date().toISOString().slice(0,7);
-  const yms     = [...new Set(txns.map(t=>t.ym))].sort();
-  const curYM   = yms.length ? yms[yms.length-1] : nowYM;
-  const curDate = new Date(curYM+'-15');
-  const curLbl  = curDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const now    = new Date();
+  const curYM  = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const curLbl = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
   const cashOnHand = openingBalance + txns.reduce((s,t)=>s+t.amt,0);
   const curTxns    = txns.filter(t=>t.ym===curYM);
