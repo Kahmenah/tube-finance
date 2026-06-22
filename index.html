@@ -676,58 +676,7 @@ const views = {
   forecast: { title: 'Cash forecast', sub: 'Jul 2026 – Jun 2027 · 12-month projection' },
   actuals:  { title: 'Actuals vs Forecast', sub: 'Month-by-month comparison', build: actualsHTML },
 
-  dashboard: {
-    title:'Dashboard', sub:'Snapshot · July 2026',
-    html:`
-    <div class="kpis">
-      <div class="kpi"><div class="label">Cash on hand</div><div class="val">${fmt(6346)}</div><div class="delta up">▲ closing balance · July 2026</div></div>
-      <div class="kpi"><div class="label">Revenue MTD</div><div class="val">${fmt(0)}</div><div class="delta">first month · no revenue yet</div></div>
-      <div class="kpi"><div class="label">Net cash MTD</div><div class="val">${fmt(-1654)}</div><div class="delta down">▼ startup expenses</div></div>
-      <div class="kpi"><div class="label">Tax reserve</div><div class="val">${fmt(0)}</div><div class="delta">not yet applicable</div></div>
-    </div>
-    <div class="grid-2 mt">
-      <div class="card">
-        <div class="card-head"><div><h3>Recent transactions</h3><div class="h-sub">July 2026 · Business Checking</div></div><span class="badge b-info">${txns.length} entries</span></div>
-        ${txns.slice(0,6).map(t=>`<div class="lrow"><div class="grow"><div>${t.desc}</div><div class="sub2">${t.d} · ${t.cat} · ${t.acct}</div></div><div class="num" style="color:${t.amt>=0?'var(--pos)':'var(--text)'}">${fmt(t.amt)}</div></div>`).join('')}
-      </div>
-      <div class="card">
-        <div class="card-head"><div><h3>July vs plan</h3><div class="h-sub">Month 1 · tracking to forecast</div></div></div>
-        ${[['Capital invested',8000,8000],['Total expenses',1654,1654],['Closing balance',6346,8000]].map(([k,a,b])=>{const p=Math.min(100,Math.round(a/b*100));return `<div style="padding:11px 0;border-bottom:1px solid var(--border)"><div class="row-between" style="margin-bottom:7px"><span>${k}</span><span class="num muted">${fmt(a)} / ${fmt(b)}</span></div><div class="bar"><span style="width:${p}%;background:${k==='Capital invested'?'var(--pos)':'var(--blue)'}"></span></div></div>`;}).join('')}
-      </div>
-    </div>
-    <div class="grid-3 mt">
-      <div class="card"><div class="label muted" style="font-size:12px">Subscribers</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
-      <div class="card"><div class="label muted" style="font-size:12px">Views (28d)</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
-      <div class="card"><div class="label muted" style="font-size:12px">Sponsor pipeline</div><div style="font-size:22px;font-weight:600;margin-top:6px">${fmt(0)}</div><div class="badge b-muted mt">No active deals</div></div>
-    </div>
-    <div class="grid-2 mt">
-      <div class="card">
-        <div class="card-head"><div><h3>Recoupment</h3><div class="h-sub">John's $8,000 investment · 20% of revenue until repaid</div></div><div class="num" style="color:var(--amber)">$0 / $8,000</div></div>
-        <div class="bar mt"><span style="width:0%;background:var(--amber)"></span></div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
-          <span style="color:var(--amber);font-weight:600">0% recouped</span>
-          <span class="muted">$8,000 remaining</span>
-        </div>
-        <div class="assump-item mt"><span class="k">While recouping</span><span class="v">20% → John · 80% → reinvestment</span></div>
-        <div class="assump-item" style="border-bottom:none"><span class="k">After recoup</span><span class="v">100% → reinvestment tiers</span></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><div><h3>Reinvestment tier</h3><div class="h-sub">Current · connect YouTube API for live count</div></div><span class="badge b-warn">Established</span></div>
-        <div style="display:flex;align-items:center;gap:16px;padding:14px 0 10px">
-          <div style="flex:1;text-align:center">
-            <div style="font-size:30px;font-weight:700;color:var(--amber)">50%</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Reinvest</div>
-          </div>
-          <div style="width:1px;background:var(--border);height:48px"></div>
-          <div style="flex:1;text-align:center">
-            <div style="font-size:30px;font-weight:700;color:var(--pos)">50%</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Distribute</div>
-          </div>
-        </div>
-        <div class="assump-item" style="border-bottom:none"><span class="k">Next tier up</span><span class="v muted">Already at max distribution</span></div>
-      </div>
-    </div>`
-  },
+  dashboard: { title:'Dashboard', sub:'Live snapshot', build:dashboardHTML },
 
   transactions: { title:'Transactions', sub:'July 2026 · Business Checking', build:txnsHTML },
 
@@ -735,28 +684,7 @@ const views = {
 
   balance: { title:'Balance sheet', sub:'As of Jul 31, 2026 · equity from transactions', build:balanceHTML },
 
-  tax: {
-    title:'Tax estimate', sub:'Tax year 2026 · quarterly estimates',
-    html:`
-    <div class="kpis">
-      <div class="kpi"><div class="label">Reserved to date</div><div class="val">${fmt(86400)}</div><div class="delta up">▲ 20% of inflows</div></div>
-      <div class="kpi"><div class="label">Est. owed YTD</div><div class="val">${fmt(79200)}</div><div class="delta up">covered by reserve</div></div>
-      <div class="kpi"><div class="label">Next payment</div><div class="val">${fmt(21400)}</div><div class="delta down">▼ due Sep 15</div></div>
-      <div class="kpi"><div class="label">Effective rate</div><div class="val">22.4%</div><div class="delta">blended fed + state</div></div>
-    </div>
-    <div class="card mt">
-      <div class="card-head"><div><h3>Quarterly estimates</h3><div class="h-sub">Pass-through to 3 partners</div></div></div>
-      <table>
-        <thead><tr><th style="text-align:left">Quarter</th><th>Net income</th><th>Est. tax</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Q1 · Jan–Mar</td><td class="num" style="color:var(--text)">${fmt(96000)}</td><td class="num" style="color:var(--text)">${fmt(21500)}</td><td><span class="badge b-pos">Paid</span></td></tr>
-          <tr><td>Q2 · Apr–Jun</td><td class="num" style="color:var(--text)">${fmt(102000)}</td><td class="num" style="color:var(--text)">${fmt(22800)}</td><td><span class="badge b-pos">Paid</span></td></tr>
-          <tr><td>Q3 · Jul–Sep</td><td class="num" style="color:var(--text)">${fmt(95000)}</td><td class="num" style="color:var(--text)">${fmt(21400)}</td><td><span class="badge b-warn">Due Sep 15</span></td></tr>
-          <tr><td>Q4 · Oct–Dec</td><td class="num muted">est. ${fmt(110000)}</td><td class="num muted">est. ${fmt(24600)}</td><td><span class="badge b-muted">Projected</span></td></tr>
-        </tbody>
-      </table>
-    </div>`
-  },
+  tax: { title:'Tax estimate', sub:'Tax year 2026 · computed from transactions', build:taxHTML },
 
   sponsors: { title:'Sponsors', sub:'Pipeline · deal tracker', build:sponsorsHTML },
 
@@ -1161,20 +1089,169 @@ function plHTML(){
     </div>`;
 }
 
+// ---- Dashboard (live from transactions + forecast) ----
+function dashboardHTML(){
+  const nowYM   = new Date().toISOString().slice(0,7);
+  const yms     = [...new Set(txns.map(t=>t.ym))].sort();
+  const curYM   = yms.length ? yms[yms.length-1] : nowYM;
+  const curDate = new Date(curYM+'-15');
+  const curLbl  = curDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  const cashOnHand = openingBalance + txns.reduce((s,t)=>s+t.amt,0);
+  const curTxns    = txns.filter(t=>t.ym===curYM);
+  const revMTD     = curTxns.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0);
+  const netMTD     = curTxns.reduce((s,t)=>s+t.amt,0);
+
+  const totalRev = txns.filter(t=>t.amt>0&&!['Capital contribution','Loan received'].includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+  const taxRes   = totalRev * 0.20;
+
+  const fcYMs   = Array.from({length:12},(_,i)=>{const d=new Date(2026,6+i,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');});
+  const fcIdx   = fcYMs.indexOf(curYM);
+  const fcIn    = fcIdx>=0 ? cashIn.reduce((s,r)=>s+(Number(r.vals[fcIdx])||0),0) : 0;
+  const fcOut   = fcIdx>=0 ? cashOut.reduce((s,r)=>s+(Number(r.vals[fcIdx])||0),0) : 0;
+  const fcClose = fcIdx>=0 ? F.balance[fcIdx] : 0;
+  const actIn   = curTxns.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt,0);
+  const actOut  = Math.abs(curTxns.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0));
+
+  const recoupTotal = 8000;
+  const recPct  = Math.min(100,Math.round(recoupCollected/recoupTotal*100));
+  const recLeft = Math.max(0,recoupTotal-recoupCollected);
+
+  const pipeVal   = sponsors.reduce((s,sp)=>s+(sp.val||0),0);
+  const dealCount = brandDeals.filter(d=>!['Cancelled','Archived'].includes(d.status)).length;
+
+  const tierIdx = Math.min(CURRENT_TIER, REINVEST_TIERS.length-1);
+  const tier    = REINVEST_TIERS[tierIdx];
+
+  return `
+  <div class="kpis">
+    <div class="kpi"><div class="label">Cash on hand</div><div class="val">${fmt(cashOnHand)}</div><div class="delta ${cashOnHand>=0?'up':'down'}">${cashOnHand>=0?'▲':'▼'} running balance</div></div>
+    <div class="kpi"><div class="label">Revenue MTD</div><div class="val">${fmt(revMTD)}</div><div class="delta ${revMTD>0?'up':''}">${revMTD>0?'▲ '+curLbl:'no revenue yet · '+curLbl}</div></div>
+    <div class="kpi"><div class="label">Net cash MTD</div><div class="val">${fmt(netMTD)}</div><div class="delta ${netMTD>=0?'up':'down'}">${netMTD>=0?'▲':'▼'} ${curLbl}</div></div>
+    <div class="kpi"><div class="label">Tax reserve (est.)</div><div class="val">${fmt(taxRes)}</div><div class="delta">20% of revenue</div></div>
+  </div>
+  <div class="grid-2 mt">
+    <div class="card">
+      <div class="card-head"><div><h3>Recent transactions</h3><div class="h-sub">${curLbl} · Business Checking</div></div><span class="badge b-info">${txns.length} entr${txns.length===1?'y':'ies'}</span></div>
+      ${txns.length?txns.slice(0,6).map(t=>`<div class="lrow"><div class="grow"><div>${t.desc}</div><div class="sub2">${t.d} · ${t.cat} · ${t.acct}</div></div><div class="num" style="color:${t.amt>=0?'var(--pos)':'var(--text)'}">${fmt(t.amt)}</div></div>`).join(''):'<div class="muted" style="padding:14px 0">No transactions yet</div>'}
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h3>${curLbl} vs plan</h3><div class="h-sub">Actuals vs forecast</div></div></div>
+      ${fcIdx>=0?[['Cash in',actIn,fcIn],['Cash out',actOut,fcOut],['Closing balance',cashOnHand,fcClose]].map(([k,a,b])=>{const p=b?Math.min(100,Math.round(a/b*100)):(a>0?100:0);return `<div style="padding:11px 0;border-bottom:1px solid var(--border)"><div class="row-between" style="margin-bottom:7px"><span>${k}</span><span class="num muted">${fmt(a)} / ${fmt(b)}</span></div><div class="bar"><span style="width:${p}%;background:var(--blue)"></span></div></div>`;}).join(''):'<div class="muted" style="padding:14px 0">No forecast data for this period</div>'}
+    </div>
+  </div>
+  <div class="grid-3 mt">
+    <div class="card"><div class="label muted" style="font-size:12px">Subscribers</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
+    <div class="card"><div class="label muted" style="font-size:12px">Views (28d)</div><div style="font-size:22px;font-weight:600;margin-top:6px">—</div><div class="badge b-muted mt">Connect YouTube API</div></div>
+    <div class="card"><div class="label muted" style="font-size:12px">Sponsor pipeline</div><div style="font-size:22px;font-weight:600;margin-top:6px">${fmt(pipeVal)}</div><div class="badge b-${dealCount>0?'warn':'muted'} mt">${dealCount>0?dealCount+' active deal'+(dealCount>1?'s':''):'No active deals'}</div></div>
+  </div>
+  <div class="grid-2 mt">
+    <div class="card">
+      <div class="card-head"><div><h3>Recoupment</h3><div class="h-sub">John's ${fmt(recoupTotal)} investment · 20% of revenue until repaid</div></div><div class="num" style="color:var(--amber)">${fmt(recoupCollected)} / ${fmt(recoupTotal)}</div></div>
+      <div class="bar mt"><span style="width:${recPct}%;background:var(--amber)"></span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
+        <span style="color:var(--amber);font-weight:600">${recPct}% recouped</span>
+        <span class="muted">${fmt(recLeft)} remaining</span>
+      </div>
+      <div class="assump-item mt"><span class="k">While recouping</span><span class="v">20% → John · 80% → reinvestment</span></div>
+      <div class="assump-item" style="border-bottom:none"><span class="k">After recoup</span><span class="v">100% → reinvestment tiers</span></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h3>Reinvestment tier</h3><div class="h-sub">Current · connect YouTube API for live count</div></div><span class="badge b-warn">${tier.label}</span></div>
+      <div style="display:flex;align-items:center;gap:16px;padding:14px 0 10px">
+        <div style="flex:1;text-align:center"><div style="font-size:30px;font-weight:700;color:var(--amber)">${tier.reinvest}%</div><div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Reinvest</div></div>
+        <div style="width:1px;background:var(--border);height:48px"></div>
+        <div style="flex:1;text-align:center"><div style="font-size:30px;font-weight:700;color:var(--pos)">${tier.distribute}%</div><div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">Distribute</div></div>
+      </div>
+      <div class="assump-item" style="border-bottom:none"><span class="k">Next tier up</span><span class="v muted">${tierIdx<REINVEST_TIERS.length-1?REINVEST_TIERS[tierIdx+1].label+' — more subscribers needed':'Already at max distribution'}</span></div>
+    </div>
+  </div>`;
+}
+
+// ---- Tax estimate (computed from transactions) ----
+function taxHTML(){
+  const TAX_RATE = 0.224;
+  const d        = plData();
+  const reserved = d.totalRev * 0.20;
+  const estOwed  = Math.max(0, d.opIncome * TAX_RATE);
+  const todayYM  = new Date().toISOString().slice(0,7);
+
+  const quarters = [
+    {lbl:'Q1 · Jan–Mar 2026', from:'2026-01', to:'2026-03', due:'Apr 15'},
+    {lbl:'Q2 · Apr–Jun 2026', from:'2026-04', to:'2026-06', due:'Jun 15'},
+    {lbl:'Q3 · Jul–Sep 2026', from:'2026-07', to:'2026-09', due:'Sep 15'},
+    {lbl:'Q4 · Oct–Dec 2026', from:'2026-10', to:'2026-12', due:'Jan 15 2027'},
+  ];
+
+  const qRows = quarters.map(q=>{
+    const qt   = txns.filter(t=>t.ym>=q.from&&t.ym<=q.to);
+    const qRev = qt.filter(t=>t.amt>0&&!['Capital contribution','Loan received'].includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+    const qExp = Math.abs(qt.filter(t=>t.amt<0).reduce((s,t)=>s+t.amt,0));
+    const qNet = qRev - qExp;
+    const qTax = Math.max(0, qNet * TAX_RATE);
+    const past = q.to < todayYM;
+    const curr = q.from <= todayYM && q.to >= todayYM;
+    return {...q, qRev, qNet, qTax, badge:past?'b-pos':curr?'b-warn':'b-muted', status:past?'Past':curr?`Due ${q.due}`:'Future'};
+  });
+
+  return `
+  <div class="kpis">
+    <div class="kpi"><div class="label">Reserved to date</div><div class="val">${fmt(reserved)}</div><div class="delta up">▲ 20% of revenue</div></div>
+    <div class="kpi"><div class="label">Est. owed (period)</div><div class="val">${fmt(estOwed)}</div><div class="delta ${reserved>=estOwed?'up':'down'}">${reserved>=estOwed?'▲ covered by reserve':'▼ reserve shortfall'}</div></div>
+    <div class="kpi"><div class="label">Net income (period)</div><div class="val">${fmt(d.opIncome)}</div><div class="delta ${d.opIncome>=0?'up':'down'}">${d.opIncome>=0?'▲':'▼'} from classified txns</div></div>
+    <div class="kpi"><div class="label">Effective rate</div><div class="val">${Math.round(TAX_RATE*100)}%</div><div class="delta">blended fed + state</div></div>
+  </div>
+  <div class="card mt">
+    <div class="card-head"><div><h3>Quarterly estimates · Tax year 2026</h3><div class="h-sub">Pass-through to 3 partners · based on classified transactions</div></div></div>
+    <table>
+      <thead><tr><th style="text-align:left">Quarter</th><th>Revenue</th><th>Net income</th><th>Est. tax (${Math.round(TAX_RATE*100)}%)</th><th>Status</th></tr></thead>
+      <tbody>
+        ${qRows.map(r=>`<tr>
+          <td style="font-size:12px">${r.lbl}</td>
+          <td class="num" style="font-size:12px;color:var(--text)">${r.qRev>0?fmt(r.qRev):'—'}</td>
+          <td class="num" style="font-size:12px;color:${r.qNet>=0?'var(--text)':'var(--neg)'}">${r.qNet!==0?fmt(r.qNet):'—'}</td>
+          <td class="num" style="font-size:12px;color:var(--text)">${r.qTax>0?fmt(r.qTax):'—'}</td>
+          <td><span class="badge ${r.badge}">${r.status}</span></td>
+        </tr>`).join('')}
+        <tr class="total">
+          <td>Full year 2026</td>
+          <td class="num">${fmt(d.totalRev)}</td>
+          <td class="num" style="color:${d.opIncome>=0?'var(--pos)':'var(--neg)'}">${fmt(d.opIncome)}</td>
+          <td class="num">${fmt(estOwed)}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    ${d.totalRev===0?`<div style="padding:12px 0 4px;color:var(--muted);font-size:12px">No revenue recorded yet — categorize income transactions to populate this.</div>`:''}
+  </div>`;
+}
+
 // ---- Balance sheet (equity derived from transactions) ----
 function balanceHTML(){
   const stats = partnerStats();
-  const assets = [['Mercury checking',132400],['Tax reserve (savings)',86400],['Accounts receivable',54000],['Equipment (net)',38200]];
-  const liab   = [['Credit card (Amex)',9800],['Taxes payable',86400]];
+  // Cash by account (from transactions + opening balance on primary account)
+  const acctBals = {};
+  txns.forEach(t=>{ acctBals[t.acct]=(acctBals[t.acct]||0)+t.amt; });
+  acctBals['Business Checking'] = (acctBals['Business Checking']||0) + openingBalance;
+  // Remove zero-balance accounts
+  const cashRows = Object.entries(acctBals).filter(([,v])=>v!==0);
+  const totalCash = cashRows.reduce((s,[,v])=>s+v,0);
+  // Revenue for tax estimate (exclude capital/financing)
+  const totalRev = txns.filter(t=>t.amt>0&&!['Capital contribution','Loan received'].includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+  const taxEst = Math.round(totalRev*0.20);
+  // Assets list
+  const assets = [...cashRows, ...(taxEst>0?[['Tax reserve (est. 20% of revenue)',taxEst]]:[])];
   const totalAssets = assets.reduce((s,[,v])=>s+v,0);
-  const totalLiab   = liab.reduce((s,[,v])=>s+v,0);
+  // Liabilities
+  const liab = taxEst>0?[['Taxes payable (est.)',taxEst]]:[];
+  const totalLiab = liab.reduce((s,[,v])=>s+v,0);
   const totalEquity = totalAssets - totalLiab;
   return `
     <div class="grid-2">
       <div class="card">
         <div class="card-head"><div><h3>Assets</h3></div></div>
         <table><tbody>
-          ${assets.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join('')}
+          ${assets.length?assets.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join(''):'<tr><td colspan="2" style="color:var(--muted);padding:10px 12px;font-size:12px">No assets — add a Capital contribution transaction to begin</td></tr>'}
           <tr class="total"><td>Total assets</td><td class="num">${fmt(totalAssets)}</td></tr>
         </tbody></table>
       </div>
@@ -1182,12 +1259,12 @@ function balanceHTML(){
         <div class="card-head"><div><h3>Liabilities &amp; equity</h3></div></div>
         <table><tbody>
           <tr class="section"><td>Liabilities</td><td></td></tr>
-          ${liab.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join('')}
+          ${liab.length?liab.map(([k,v])=>`<tr><td>${k}</td><td class="num" style="color:var(--text)">${fmt(v)}</td></tr>`).join(''):'<tr><td colspan="2" style="color:var(--muted);padding:10px 12px;font-size:12px">None recorded</td></tr>'}
           <tr class="total"><td>Total liabilities</td><td class="num">${fmt(totalLiab)}</td></tr>
           <tr class="section"><td>Partner equity</td><td></td></tr>
           ${partners.map(p=>`<tr>
             <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:20px;height:20px;font-size:10px;background:${p.color}">${p.init}</div>${p.name} (${p.pct}%)</div>
-            <div style="padding-left:28px;margin-top:3px;font-size:11px;color:var(--muted)">+${fmt(stats[p.name].contrib)} contrib · −${fmt(stats[p.name].draw)} drawn</div></td>
+            <div style="padding-left:28px;margin-top:3px;font-size:11px;color:var(--muted)">+${fmt(stats[p.name]?.contrib||0)} contrib · −${fmt(stats[p.name]?.draw||0)} drawn</div></td>
             <td class="num" style="color:var(--text);vertical-align:top;padding-top:10px">${fmt(totalEquity*p.pct/100)}</td></tr>`).join('')}
           <tr class="total"><td>Total liabilities &amp; equity</td><td class="num">${fmt(totalAssets)}</td></tr>
         </tbody></table>
@@ -1456,8 +1533,13 @@ function generateCPAReport(){
   const period = from === to ? from : `${from} – ${to}`;
   const d = plData();
   const stats = partnerStats();
-  const assets = [['Mercury checking',132400],['Tax reserve (savings)',86400],['Accounts receivable',54000],['Equipment (net)',38200]];
-  const liab   = [['Credit card (Amex)',9800],['Taxes payable',86400]];
+  const acctBals2 = {};
+  txns.forEach(t=>{ acctBals2[t.acct]=(acctBals2[t.acct]||0)+t.amt; });
+  acctBals2['Business Checking'] = (acctBals2['Business Checking']||0) + openingBalance;
+  const totalRev2 = txns.filter(t=>t.amt>0&&!['Capital contribution','Loan received'].includes(t.cat)).reduce((s,t)=>s+t.amt,0);
+  const taxEst2   = Math.round(totalRev2*0.20);
+  const assets    = [...Object.entries(acctBals2).filter(([,v])=>v!==0), ...(taxEst2>0?[['Tax reserve (est.)',taxEst2]]:[])];
+  const liab      = taxEst2>0?[['Taxes payable (est.)',taxEst2]]:[];
   const totalAssets = assets.reduce((s,[,v])=>s+v,0);
   const totalLiab   = liab.reduce((s,[,v])=>s+v,0);
   const totalEquity = totalAssets - totalLiab;
