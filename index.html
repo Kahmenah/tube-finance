@@ -237,7 +237,10 @@
     </div>
     <div style="margin-bottom:22px">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6c6f72;margin-bottom:6px">Password</div>
-      <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
+      <div style="position:relative">
+        <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 48px 10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit;box-sizing:border-box">
+        <button type="button" onclick="togglePw('login-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6c6f72;cursor:pointer;font-size:12px;padding:0;font-family:inherit">Show</button>
+      </div>
     </div>
     <button id="login-btn" style="width:100%;background:#3ecf8e;color:#0d1117;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
     <div id="login-msg" style="font-size:12px;text-align:center;min-height:20px;margin-top:12px"></div>
@@ -270,9 +273,19 @@
       <span style="font-size:18px;font-weight:600;color:#e8e8e6">Tube Finance</span>
     </div>
     <div style="font-size:13px;color:#8b8e91;margin-bottom:24px">Choose a new password.</div>
-    <div style="margin-bottom:22px">
+    <div style="margin-bottom:14px">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6c6f72;margin-bottom:6px">New password</div>
-      <input id="reset-pass" type="password" placeholder="••••••••" autocomplete="new-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit">
+      <div style="position:relative">
+        <input id="reset-pass" type="password" placeholder="••••••••" autocomplete="new-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 48px 10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit;box-sizing:border-box">
+        <button type="button" onclick="togglePw('reset-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6c6f72;cursor:pointer;font-size:12px;padding:0;font-family:inherit">Show</button>
+      </div>
+    </div>
+    <div style="margin-bottom:22px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6c6f72;margin-bottom:6px">Confirm password</div>
+      <div style="position:relative">
+        <input id="reset-pass-confirm" type="password" placeholder="••••••••" autocomplete="new-password" style="width:100%;background:#141517;border:1px solid #2a2d30;color:#e8e8e6;padding:10px 48px 10px 12px;border-radius:8px;font-size:14px;outline:none;font-family:inherit;box-sizing:border-box">
+        <button type="button" onclick="togglePw('reset-pass-confirm',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6c6f72;cursor:pointer;font-size:12px;padding:0;font-family:inherit">Show</button>
+      </div>
     </div>
     <button id="reset-btn" style="width:100%;background:#3ecf8e;color:#0d1117;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Set new password</button>
     <div id="reset-msg" style="font-size:12px;text-align:center;min-height:20px;margin-top:12px"></div>
@@ -1812,11 +1825,19 @@ document.getElementById('forgot-btn').addEventListener('click', async () => {
   else { msg.style.color='#3ecf8e'; msg.textContent = 'Check your email for the reset link.'; }
 });
 
+function togglePw(id, btn){
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+}
+
 document.getElementById('reset-btn').addEventListener('click', async () => {
-  const pass = document.getElementById('reset-pass').value;
-  const msg  = document.getElementById('reset-msg');
-  const btn  = document.getElementById('reset-btn');
+  const pass    = document.getElementById('reset-pass').value;
+  const confirm = document.getElementById('reset-pass-confirm').value;
+  const msg     = document.getElementById('reset-msg');
+  const btn     = document.getElementById('reset-btn');
   if(pass.length < 6){ msg.style.color='#ff4d4d'; msg.textContent='Password must be at least 6 characters.'; return; }
+  if(pass !== confirm){ msg.style.color='#ff4d4d'; msg.textContent='Passwords do not match — try again.'; return; }
   btn.disabled = true; btn.textContent = 'Saving…';
   const { error } = await sb.auth.updateUser({ password: pass });
   btn.disabled = false; btn.textContent = 'Set new password';
