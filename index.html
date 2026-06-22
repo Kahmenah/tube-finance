@@ -1663,7 +1663,11 @@ function bindAdmin(){
   if(soBtn){
     const emailEl = document.getElementById('admin-user-email');
     if(emailEl && currentUser) emailEl.textContent = `Signed in as ${currentUser.email}`;
-    soBtn.addEventListener('click', async () => { await sb.auth.signOut(); });
+    soBtn.addEventListener('click', async () => {
+      await sb.auth.signOut();
+      currentUser = null;
+      showLoginScreen();
+    });
   }
 }
 
