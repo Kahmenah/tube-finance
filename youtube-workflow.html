@@ -76,18 +76,20 @@
     border-right: 5px solid transparent;
   }
   .col-bullets, .col-bullets-right {
+    padding-top: 8px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     width: 210px;
   }
-  .col-bullets-right { padding-top: 92px; }
+  .col-bullets-right { padding-top: calc(92px + 8px); }
   .bullet-group {
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 5px;
     padding-left: 4px;
+    overflow: hidden;
   }
   .bullet-spacer { height: 28px; flex-shrink: 0; }
   .bullet-item {
