@@ -26,37 +26,29 @@
   }
   .layout {
     display: flex;
-    gap: 28px;
+    gap: 60px;
     align-items: flex-start;
   }
-  .col-flow, .col-flow-right {
+  /* Each side is a vertical stack of rows + arrows */
+  .side {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
+    align-items: flex-start;
   }
-  .col-flow-right { padding-top: 92px; }
-  .step {
-    width: 148px;
-    height: 64px;
-    border-radius: 10px;
+  /* Each row = bubble + bullets, vertically centered */
+  .row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border: 2px solid;
-  }
-  .step-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    letter-spacing: 0.06em;
-    line-height: 1.6;
+    gap: 28px;
   }
   .arrow {
     width: 2px;
     height: 28px;
     position: relative;
-    flex-shrink: 0;
+    margin-left: 73px; /* center under 148px bubble */
+  }
+  .arrow-right {
+    margin-left: 88px; /* center under 180px bubble */
   }
   .arrow::before {
     content: '';
@@ -75,23 +67,29 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
   }
-  .col-bullets, .col-bullets-right {
-    padding-top: 8px;
+  .step {
+    width: 148px;
+    height: 64px;
+    border-radius: 10px;
     display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    width: 210px;
-  }
-  .col-bullets-right { padding-top: calc(92px + 8px); }
-  .bullet-group {
-    display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding-left: 4px;
-    overflow: hidden;
+    border: 2px solid;
+    flex-shrink: 0;
   }
-  .bullet-spacer { height: 28px; flex-shrink: 0; }
+  .step-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+  }
+  .bullets {
+    width: 210px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
   .bullet-item {
     display: flex;
     align-items: flex-start;
@@ -134,87 +132,90 @@
 
 <div class="layout">
 
-  <!-- LEFT FLOW -->
-  <div class="col-flow">
-    <div class="step c1"><div class="step-label">IDEA</div></div>
+  <!-- LEFT SIDE -->
+  <div class="side">
+    <div class="row">
+      <div class="step c1"><div class="step-label">IDEA</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Research trending topics in your niche</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Define the core message or transformation</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Validate search volume and audience fit</div>
+      </div>
+    </div>
     <div class="arrow"></div>
-    <div class="step c2" style="height:92px"><div class="step-label">TITLE<br>THUMB<br>HOOK</div></div>
+    <div class="row">
+      <div class="step c2" style="height:92px"><div class="step-label">TITLE<br>THUMB<br>HOOK</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Draft 5 title variations, pick the best</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Sketch thumbnail concepts around the title</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Write 3 hook options to test on upload</div>
+      </div>
+    </div>
     <div class="arrow"></div>
-    <div class="step c3"><div class="step-label">WRITING</div></div>
+    <div class="row">
+      <div class="step c3"><div class="step-label">WRITING</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Build a detailed outline with timestamps</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Write full script or talking points doc</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Add B-roll shot list and graphic notes</div>
+      </div>
+    </div>
     <div class="arrow"></div>
-    <div class="step c4"><div class="step-label">FILM</div></div>
+    <div class="row">
+      <div class="step c4"><div class="step-label">FILM</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Set up lighting, audio, and framing</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Record all A-roll footage in one session</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Capture B-roll and supporting clips</div>
+      </div>
+    </div>
     <div class="arrow"></div>
-    <div class="step c5"><div class="step-label">EDIT</div></div>
+    <div class="row">
+      <div class="step c5"><div class="step-label">EDIT</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Rough cut: trim silences and mistakes</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Add graphics, captions, and music</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Final review, color grade, and export</div>
+      </div>
+    </div>
   </div>
 
-  <!-- LEFT BULLETS -->
-  <div class="col-bullets">
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Research trending topics in your niche</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Define the core message or transformation</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#ff6b6b"></div>Validate search volume and audience fit</div>
+  <!-- RIGHT SIDE (offset by IDEA 64px + arrow 28px = 92px) -->
+  <div class="side" style="padding-top:92px">
+    <div class="row">
+      <div class="step r1" style="width:180px; height:92px"><div class="step-label">HOOK</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>Write an attention-grabbing opening line</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>State the video payoff immediately</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>Open a loop to keep viewers watching</div>
+      </div>
     </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:92px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Draft 5 title variations, pick the best</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Sketch thumbnail concepts around the title</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#c084fc"></div>Write 3 hook options to test on upload</div>
+    <div class="arrow arrow-right"></div>
+    <div class="row">
+      <div class="step r2" style="width:180px"><div class="step-label">INTRO</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Briefly introduce yourself or the topic</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Set expectations for the video</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Build credibility fast</div>
+      </div>
     </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Build a detailed outline with timestamps</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Write full script or talking points doc</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#38bdf8"></div>Add B-roll shot list and graphic notes</div>
+    <div class="arrow arrow-right"></div>
+    <div class="row">
+      <div class="step r3" style="width:180px"><div class="step-label">VALUE</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Deliver the promised content clearly</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Use structure, chapters, and B-roll</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Keep pacing tight and engaging</div>
+      </div>
     </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Set up lighting, audio, and framing</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Record all A-roll footage in one session</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fb923c"></div>Capture B-roll and supporting clips</div>
-    </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Rough cut: trim silences and mistakes</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Add graphics, captions, and music</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#34d399"></div>Final review, color grade, and export</div>
-    </div>
-  </div>
-
-  <!-- RIGHT FLOW (starts offset to align HOOK with TITLE/THUMB/HOOK) -->
-  <div class="col-flow-right">
-    <div class="step r1" style="width:180px; height:92px"><div class="step-label">HOOK</div></div>
-    <div class="arrow"></div>
-    <div class="step r2" style="width:180px"><div class="step-label">INTRO</div></div>
-    <div class="arrow"></div>
-    <div class="step r3" style="width:180px"><div class="step-label">VALUE</div></div>
-    <div class="arrow"></div>
-    <div class="step r4" style="width:180px"><div class="step-label">END SCREEN<br>SALES PITCH</div></div>
-  </div>
-
-  <!-- RIGHT BULLETS -->
-  <div class="col-bullets-right">
-    <div class="bullet-group" style="height:92px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>Write an attention-grabbing opening line</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>State the video payoff immediately</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#f472b6"></div>Open a loop to keep viewers watching</div>
-    </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Briefly introduce yourself or the topic</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Set expectations for the video</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#818cf8"></div>Build credibility fast</div>
-    </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Deliver the promised content clearly</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Use structure, chapters, and B-roll</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#4ade80"></div>Keep pacing tight and engaging</div>
-    </div>
-    <div class="bullet-spacer"></div>
-    <div class="bullet-group" style="height:64px">
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>CTA: subscribe, like, or comment</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>Tease the next video or playlist</div>
-      <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>Mention your product or service offer</div>
+    <div class="arrow arrow-right"></div>
+    <div class="row">
+      <div class="step r4" style="width:180px"><div class="step-label">END SCREEN<br>SALES PITCH</div></div>
+      <div class="bullets">
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>CTA: subscribe, like, or comment</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>Tease the next video or playlist</div>
+        <div class="bullet-item"><div class="bullet-dot" style="background:#fbbf24"></div>Mention your product or service offer</div>
+      </div>
     </div>
   </div>
 
